@@ -1,8 +1,5 @@
 version: 1.0.{build}
 
-environment:
-  site_to_deploy: mobileapi.hydrantwiki.com
-
 before_build:
   - nuget restore src/hwMobileApi.sln
 
@@ -37,4 +34,6 @@ deploy:
       appveyor_repo_tag: true
       platform: x64
     name: TG-WS-02
-    site_name: $(site_to_deploy)
+    site_name: HydrantWikiMobileAPI
+    hostname: mobileapi.hydrantwiki.com
+    remove_files: false
