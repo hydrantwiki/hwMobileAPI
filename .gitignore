@@ -1,0 +1,6 @@
+src/obj/
+src/packages/
+src/bin/
+*.user
+*.config
+*.suo
