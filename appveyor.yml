@@ -26,7 +26,7 @@ platform: x64
 configuration: Debug
   
 build:
-  project: src/hwDataLibrary.sln
+  project: src/hwMobileApi.sln
   verbosity: Minimal 
   publish_nuget: false
   
