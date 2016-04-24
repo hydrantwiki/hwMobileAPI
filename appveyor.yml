@@ -35,7 +35,7 @@ deploy:
       appveyor_repo_tag: true
       platform: x64
     name: TG-WS-02
-    hwMobileApi.Web.deploy_website: true
-    hwMobileApi.Web.site_name: HydrantWikiMobileAPI
-    hwMobileApi.Web.hostname: mobileapi.hydrantwiki.com
-    hwMobileApi.Web.remove_files: false
+    hwMobileApi.zip.deploy_website: true
+    hwMobileApi.zip.site_name: HydrantWikiMobileAPI
+    hwMobileApi.zip.hostname: mobileapi.hydrantwiki.com
+    hwMobileApi.zip.remove_files: false
