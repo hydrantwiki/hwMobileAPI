@@ -21,21 +21,21 @@ nuget:
 platform: x64
 
 configuration: Debug
-  
+
 build:
   project: src/hwMobileApi.sln
   verbosity: Minimal 
   publish_nuget: false
-  publish_wap: true
+  publish_wap_xcopy: true
   
 deploy:
   - provider: Environment
-    on:
-      branch: master
-      appveyor_repo_tag: true
-      platform: x64
     name: TG-WS-02
     hwMobileApi.deploy_website: true
     hwMobileApi.site_name: HydrantWikiMobileAPI
     hwMobileApi.hostname: mobileapi.hydrantwiki.com
     hwMobileApi.remove_files: false
+    on:
+      branch: master
+      appveyor_repo_tag: true
+      platform: x64
