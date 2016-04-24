@@ -30,12 +30,6 @@ build:
 deploy:
   - provider: Environment
     name: TG-WS-02
-    artifact: hwMobileApi
-    hwMobileApi.deploy_website: true
-    hwMobileApi.path: D:\HydrantWiki\MobileAPI\Site
-    hwMobileApi.site_name: HydrantWikiMobileAPI
-    hwMobileApi.hostname: mobileapi.hydrantwiki.com
-    hwMobileApi.remove_files: false
     on:
       branch: master
       appveyor_repo_tag: true
