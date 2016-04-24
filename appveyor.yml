@@ -25,13 +25,14 @@ configuration: Debug
 build:
   project: src/hwMobileApi.sln
   verbosity: Minimal 
-  publish_nuget: false
-  publish_wap_xcopy: true
+  publish_wap: true
   
 deploy:
   - provider: Environment
     name: TG-WS-02
+    artifact: hwMobileApi
     hwMobileApi.deploy_website: true
+    hwMobileApi.path: D:\HydrantWiki\MobileAPI\Site
     hwMobileApi.site_name: HydrantWikiMobileAPI
     hwMobileApi.hostname: mobileapi.hydrantwiki.com
     hwMobileApi.remove_files: false
