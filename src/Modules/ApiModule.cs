@@ -144,6 +144,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                 int count = hwm.GetTagCount();
 
                 response = new TagCountResponse(true, count);
+                hwm.LogInfo(user.Guid, "Retrieved Tag Count");
             }
             else
             {
@@ -169,6 +170,8 @@ namespace HydrantWiki.Mobile.Api.Modules
                 int count = hwm.GetTagCount(user.Guid);
 
                 response = new TagCountResponse(true, count);
+                hwm.LogInfo(user.Guid, "Retrieved My Tag Count");
+
             }
             else
             {
@@ -347,6 +350,8 @@ namespace HydrantWiki.Mobile.Api.Modules
 
             HydrantQueryResponse response = new HydrantQueryResponse {Success = true, Hydrants = headers};
 
+            hwm.LogInfo(Guid.Empty, "Retrieved Hydrants by Center and Distance");
+
             return response;
         }
 
@@ -376,6 +381,8 @@ namespace HydrantWiki.Mobile.Api.Modules
             List<HydrantHeader> headers = ProcessHydrants(hydrants);
 
             HydrantQueryResponse response = new HydrantQueryResponse { Success = true, Hydrants = headers };
+
+            hwm.LogInfo(Guid.Empty, "Retrieved Hydrants by Geobox");
 
             return response;
         }

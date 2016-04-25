@@ -38,8 +38,7 @@ namespace HydrantWiki.Mobile.Api.Helpers
 
         public static BaseResponse Authorize(string _username, string _password, out User _user)
         {
-            AuthorizationResponse authResponse = new AuthorizationResponse();
-            authResponse.Success = false;
+            AuthorizationResponse authResponse = new AuthorizationResponse {Success = false};
 
             HydrantWikiManager hwManager = new HydrantWikiManager();
             _user = hwManager.GetUser(UserSources.HydrantWiki, _username);

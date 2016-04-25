@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Conventions;
 using Nancy.Session;
 using Nancy.TinyIoc;
+using TreeGecko.Library.Common.Helpers;
+using TreeGecko.Library.Loggly.TraceListeners;
 
 namespace HydrantWiki.Mobile.Api.Bootstrapper
 {
@@ -20,6 +23,7 @@ namespace HydrantWiki.Mobile.Api.Bootstrapper
             CookieBasedSessions.Enable(_pipelines);
             Nancy.Security.Csrf.Enable(_pipelines);
 
+            Trace.Listeners.Add(new LogglyTraceListener());
         }
         
         protected override void ConfigureConventions(NancyConventions _conventions)
