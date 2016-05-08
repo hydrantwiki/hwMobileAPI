@@ -27,8 +27,8 @@
       <HintPath>packages\AWSSDK.2.3.55.0\lib\net45\AWSSDK.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="hwDataLibrary, Version=1.0.22.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\HydrantWiki.DataLibrary.1.0.22.0\lib\net40\hwDataLibrary.dll</HintPath>
+    <Reference Include="hwDataLibrary, Version=1.0.23.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>packages\HydrantWiki.DataLibrary.1.0.23\lib\net40\hwDataLibrary.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
