@@ -21,40 +21,30 @@
     <IISExpressUseClassicPipelineMode />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\hwServer\src\Site\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK, Version=2.3.55.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
-      <HintPath>packages\AWSSDK.2.3.55.0\lib\net45\AWSSDK.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="hwDataLibrary, Version=1.0.23.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\HydrantWiki.DataLibrary.1.0.23\lib\net40\hwDataLibrary.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="AWSSDK">
+      <HintPath>..\..\bin\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="MongoDB.Bson, Version=1.11.0.92, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
-      <HintPath>packages\mongocsharpdriver.1.11.0\lib\net35\MongoDB.Bson.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\..\bin\MongoDB.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=1.11.0.92, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
-      <HintPath>packages\mongocsharpdriver.1.11.0\lib\net35\MongoDB.Driver.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\..\bin\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="Nancy, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Nancy.1.4.3\lib\net40\Nancy.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Nancy">
+      <HintPath>..\..\bin\Nancy.dll</HintPath>
     </Reference>
-    <Reference Include="Nancy.Hosting.Aspnet, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Nancy.Hosting.Aspnet.1.4.1\lib\net40\Nancy.Hosting.Aspnet.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Nancy.Hosting.Self">
+      <HintPath>..\..\bin\Nancy.Hosting.Self.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\bin\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\RestSharp.105.2.3\lib\net45\RestSharp.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="RestSharp">
+      <HintPath>..\..\bin\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -72,34 +62,29 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="tgAWS, Version=1.0.45.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\TreeGeckoLibraries.AWS.1.0.45\lib\net40\tgAWS.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="tgAWS">
+      <HintPath>..\..\bin\tgAWS.dll</HintPath>
     </Reference>
-    <Reference Include="tgCommonLibrary, Version=1.0.45.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\TreeGeckoLibraries.Common.1.0.45\lib\net40\tgCommonLibrary.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="tgCommonLibrary">
+      <HintPath>..\..\bin\tgCommonLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="tgGeoframeworks, Version=1.0.45.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\TreeGeckoLibraries.Geospatial.1.0.45\lib\net40\tgGeoframeworks.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="tgGeoframeworks">
+      <HintPath>..\..\bin\tgGeoframeworks.dll</HintPath>
     </Reference>
-    <Reference Include="tgLoggly, Version=1.0.45.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\TreeGeckoLibraries.Loggly.1.0.45\lib\net45\tgLoggly.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="tgLoggly">
+      <HintPath>..\..\bin\tgLoggly.dll</HintPath>
     </Reference>
-    <Reference Include="tgMongo, Version=1.0.45.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\TreeGeckoLibraries.Mongo.1.0.45\lib\net40\tgMongo.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="tgMongo">
+      <HintPath>..\..\bin\tgMongo.dll</HintPath>
     </Reference>
-    <Reference Include="tgNet, Version=1.0.45.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\TreeGeckoLibraries.Net.1.0.45\lib\net40\tgNet.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="tgNet">
+      <HintPath>..\..\bin\tgNet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
-    <None Include="Web.config" />
+    <None Include="Web.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="api.html" />
@@ -130,6 +115,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\PublishProfiles\File.pubxml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\hwDataLibrary\hwDataLibrary.csproj">
+      <Project>{e2f02884-ce3d-4321-9107-f25c050881b1}</Project>
+      <Name>hwDataLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -192,13 +183,6 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

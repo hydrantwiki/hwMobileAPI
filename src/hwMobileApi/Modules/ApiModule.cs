@@ -25,6 +25,11 @@ namespace HydrantWiki.Mobile.Api.Modules
     {
         public ApiModule()
         {
+            Get["/"] = _parameters =>
+            {
+                return "HydrantWiki Api";
+            };
+
             Get["/api/authorize"] = _parameters => Response.AsError(HttpStatusCode.MethodNotAllowed, null);
 
             Post["/api/authorize"] = _parameters =>

@@ -4,3 +4,8 @@ src/bin/
 *.user
 *.config
 *.suo
+src/hwMobileApi/obj/
+src/hwAPIConsole/obj/
+src/hwAPIConsole/bin/
+src/hwDataLibrary/obj/
+src/hwMobileApi/packages/
