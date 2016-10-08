@@ -6,6 +6,7 @@ using HydrantWiki.Library.Objects;
 using HydrantWiki.Mobile.Api.ResponseObjects;
 using Nancy;
 using TreeGecko.Library.Net.Objects;
+using TreeGecko.Library.Common.Enums;
 
 namespace HydrantWiki.Mobile.Api.Helpers
 {
@@ -59,10 +60,13 @@ namespace HydrantWiki.Mobile.Api.Helpers
                             user.AuthorizationToken = authorization.AuthorizationToken;
                             user.DisplayName = _user.DisplayName;
                             user.Username = _user.Username;
+                            user.UserType = Enum.GetName(typeof(UserTypes), _user.UserType);
 
                             authResponse.Success = true;
                             authResponse.User = user;
                             authResponse.Message = "";
+
+                            hwManager.LogInfo(_user.Guid, "User Logged In");
 
                             return authResponse;
                         }

@@ -51,7 +51,7 @@ namespace HydrantWiki.Mobile.Api.Modules
             };
 
             Get["/api/tags/mine/count"] = _parameters =>
-            {
+            {                
                 BaseResponse br = HandleGetMyTagCount(_parameters);
                 return Response.AsSuccess(br);
             };
