@@ -18,6 +18,7 @@ using TreeGecko.Library.Geospatial.Objects;
 using TreeGecko.Library.Net.Objects;
 using Tag = HydrantWiki.Library.Objects.Tag;
 using User = HydrantWiki.Library.Objects.User;
+using TreeGecko.Library.Common.Enums;
 
 namespace HydrantWiki.Mobile.Api.Modules
 {
@@ -97,6 +98,88 @@ namespace HydrantWiki.Mobile.Api.Modules
                 BaseResponse br = HandleGetMyTags(_parameters);
                 return Response.AsSuccess(br);
             };
+
+            Get["/api/review/tags"] = _parameters =>
+            {
+                BaseResponse br = HandleGetTagsToReview(_parameters);
+                return Response.AsSuccess(br);
+            };
+
+        }
+
+        private BaseResponse HandleGetTagsToReview(DynamicDictionary _parameters)
+        {
+            User user;
+            BaseResponse response;
+
+            if (AuthHelper.IsAuthorized(Request, out user))
+            {
+                if (user.UserType == UserTypes.SuperUser
+                    || user.UserType == UserTypes.Administrator)
+                {
+                    HydrantWikiManager hwm = new HydrantWikiManager();
+                    List<Tag> tags = hwm.GetPendingTags();
+
+                    List<TagToReview> tagsToReview = new List<TagToReview>();
+
+                    foreach (var tag in tags)
+                    {
+                        TagToReview reviewTag = new TagToReview();
+                        reviewTag.ImageGuid = tag.ImageGuid;
+
+                        TGUser tagUser = hwm.GetUser(tag.UserGuid);
+                        if (tagUser != null)
+                        {
+                            reviewTag.Username = tagUser.Username;
+
+                            UserStats stats = hwm.GetUserStats(tagUser.Guid);
+                            reviewTag.UserTagsApproved = stats.ApprovedTagCount;
+                            reviewTag.UserTagsRejected = stats.RejectedTagCount;
+                        }
+
+                        if (tag.Position != null)
+                        {
+                            reviewTag.Position = new Position()
+                            {
+                                Latitude = tag.Position.Y,
+                                Longitude = tag.Position.X
+                            };
+
+                            List<Hydrant> nearby = hwm.GetHydrants(
+                                reviewTag.Position.Latitude,
+                                reviewTag.Position.Longitude,
+                                100);
+
+                            reviewTag.NearbyHydrants = ProcessHydrants(nearby, tag.Position);
+                        }
+                       
+                        tagsToReview.Add(reviewTag);
+                    }
+
+                    hwm.LogInfo(user.Guid, string.Format("Retrieved Tags to Review ({0})", tagsToReview.Count));
+
+                    return new TagsToReviewResponse()
+                    {
+                        Success = true,
+                        Tags = tagsToReview
+                    };
+                }
+                else
+                {
+                    return new BaseResponse {
+                        Error = "User not allowed to review tags",
+                        Success = false
+                    };                
+                }
+            }
+            else
+            {
+                return new BaseResponse
+                {
+                    Error = "Not authenticated",
+                    Success = false
+                };
+            }
         }
 
         private BaseResponse HandleGetMyTags(DynamicDictionary _parameters)
@@ -256,6 +339,8 @@ namespace HydrantWiki.Mobile.Api.Modules
 
                             fileData = ImageHelper.GetThumbnailBytesOfMaxSize(original, 100);
                             hwManager.PersistThumbnailImage(imageGuid, ".jpg", "image/jpg", fileData);
+
+                            TraceFileHelper.Info("Saved Image ({0})", imageGuid);
 
                             response.Success = true;
                             return response;

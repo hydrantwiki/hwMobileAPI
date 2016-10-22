@@ -7,10 +7,14 @@ namespace HydrantWiki.Mobile.Api.Extensions
     {
         public static string ReadAsString(this RequestStream _requestStream)
         {
+            string output = null;
+
             using (var reader = new StreamReader(_requestStream))
             {
-                return reader.ReadToEnd();
+                output = reader.ReadToEnd();
             }
+
+            return output;
         }
     }
 }
