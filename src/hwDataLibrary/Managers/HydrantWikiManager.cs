@@ -679,13 +679,14 @@ namespace HydrantWiki.Library.Managers
 
         public void PersistOriginal(Guid _fileGuid, string _extension, 
             string _mimetype, byte[] _data)
-        {
+        {            
             string bucketName = Config.GetSettingValue("S3Bucket_Originals");
             string folderName = Config.GetSettingValue("S3MediaRootFolder");
 
             string filename = ImageProcessingHelper.GetPath(_fileGuid, folderName, _extension, false);
 
-            S3Helper.PersistFile(bucketName, filename, _mimetype, _data);
+            var s3 = S3Helper.GetS3();
+            S3Helper.PersistFile(s3, bucketName, filename, _mimetype, _data);
         }
 
         public byte[] GetOriginal(Guid _fileGuid, string _extension)
@@ -695,7 +696,8 @@ namespace HydrantWiki.Library.Managers
 
             string filename = ImageProcessingHelper.GetPath(_fileGuid, folderName, _extension, false);
 
-            return S3Helper.GetFile(bucketName, filename);
+            var s3 = S3Helper.GetS3();
+            return S3Helper.GetFile(s3, bucketName, filename);
         }
 
         public void PersistWebImage(Guid _fileGuid, string _extension,
@@ -706,7 +708,8 @@ namespace HydrantWiki.Library.Managers
 
             string filename = ImageProcessingHelper.GetPath(_fileGuid, folderName, _extension, false);
 
-            S3Helper.PersistFile(bucketName, filename, _mimetype, _data);
+            var s3 = S3Helper.GetS3();
+            S3Helper.PersistFile(s3, bucketName, filename, _mimetype, _data);
         }
 
         public byte[] GetWebImage(Guid _fileGuid, string _extension)
@@ -716,7 +719,8 @@ namespace HydrantWiki.Library.Managers
 
             string filename = ImageProcessingHelper.GetPath(_fileGuid, folderName, _extension, false);
 
-            return S3Helper.GetFile(bucketName, filename);
+            var s3 = S3Helper.GetS3();
+            return S3Helper.GetFile(s3, bucketName, filename);
         }
 
         public void PersistThumbnailImage(Guid _fileGuid, string _extension,
@@ -727,7 +731,8 @@ namespace HydrantWiki.Library.Managers
 
             string filename = ImageProcessingHelper.GetPath(_fileGuid, folderName, _extension, true);
 
-            S3Helper.PersistFile(bucketName, filename, _mimetype, _data);
+            var s3 = S3Helper.GetS3();
+            S3Helper.PersistFile(s3, bucketName, filename, _mimetype, _data);
         }
 
         public byte[] GetThumbnailImage(Guid _fileGuid, string _extension)
@@ -737,7 +742,8 @@ namespace HydrantWiki.Library.Managers
 
             string filename = ImageProcessingHelper.GetPath(_fileGuid, folderName, _extension, true);
 
-            return S3Helper.GetFile(bucketName, filename);
+            var s3 = S3Helper.GetS3();
+            return S3Helper.GetFile(s3, bucketName, filename);
         }
 
         #endregion

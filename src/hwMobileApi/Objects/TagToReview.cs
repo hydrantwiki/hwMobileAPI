@@ -12,6 +12,10 @@ namespace HydrantWiki.Mobile.Api.Objects
 
         public string Status { get; set; }
 
+        public string ThumbnailUrl { get; set; }
+
+        public string ImageUrl { get; set; }
+
         public List<HydrantHeader> NearbyHydrants { get; set; }
     }
 }

@@ -19,6 +19,7 @@ using TreeGecko.Library.Net.Objects;
 using Tag = HydrantWiki.Library.Objects.Tag;
 using User = HydrantWiki.Library.Objects.User;
 using TreeGecko.Library.Common.Enums;
+using HydrantWiki.Library.Helpers;
 
 namespace HydrantWiki.Mobile.Api.Modules
 {
@@ -135,6 +136,12 @@ namespace HydrantWiki.Mobile.Api.Modules
                             UserStats stats = hwm.GetUserStats(tagUser.Guid);
                             reviewTag.UserTagsApproved = stats.ApprovedTagCount;
                             reviewTag.UserTagsRejected = stats.RejectedTagCount;
+                        }
+
+                        if (tag.ImageGuid != null)
+                        {
+                            reviewTag.ThumbnailUrl = tag.GetUrl(true);
+                            reviewTag.ImageUrl = tag.GetUrl(false);
                         }
 
                         if (tag.Position != null)
@@ -396,6 +403,9 @@ namespace HydrantWiki.Mobile.Api.Modules
                             {
                                 hwManager.Persist(dbTag);
                                 hwManager.LogVerbose(user.Guid, "Tag Saved");
+
+                                response.ImageUrl = dbTag.GetUrl(false);
+                                response.ThumbnailUrl = dbTag.GetUrl(true);
 
                                 response.Success = true;
                                 return response;

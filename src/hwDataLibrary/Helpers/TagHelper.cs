@@ -1,6 +1,7 @@
 ﻿using System;
 using HydrantWiki.Library.Objects;
 using TreeGecko.Library.Common.Helpers;
+using System.Text;
 
 namespace HydrantWiki.Library.Helpers
 {
@@ -8,7 +9,15 @@ namespace HydrantWiki.Library.Helpers
     {
         static TagHelper()
         {
-            BaseUrl = Config.GetSettingValue("S3Protocol", "https") + "://" + Config.GetSettingValue("S3Bucket_Images") + "/" + Config.GetSettingValue("S3MediaRootFolder");
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(Config.GetSettingValue("S3Protocol", "https"));
+            sb.Append("://");
+            sb.Append(Config.GetSettingValue("S3Bucket_ImagesUrl"));
+            sb.Append("/");
+            sb.Append(Config.GetSettingValue("S3MediaRootFolder"));
+
+            BaseUrl = sb.ToString();
         }
 
         public static string BaseUrl { get; set; }
