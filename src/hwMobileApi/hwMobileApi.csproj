@@ -110,6 +110,7 @@
     <Compile Include="ResponseObjects\HydrantQueryResponse.cs" />
     <Compile Include="ResponseObjects\IsAvailableResponse.cs" />
     <Compile Include="ResponseObjects\PagedResponse.cs" />
+    <Compile Include="ResponseObjects\ReviewTagResponse.cs" />
     <Compile Include="ResponseObjects\TagCountResponse.cs" />
     <Compile Include="ResponseObjects\TagPostResponse.cs" />
     <Compile Include="ResponseObjects\TagsResponse.cs" />

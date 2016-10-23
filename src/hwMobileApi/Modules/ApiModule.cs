@@ -106,12 +106,109 @@ namespace HydrantWiki.Mobile.Api.Modules
                 return Response.AsSuccess(br);
             };
 
+            Post["/api/review/tag/{tagid:guid}/approve"] = _parameters =>
+            {
+                BaseResponse br = HandleApproveTag(_parameters);
+                return Response.AsSuccess(br);
+            };
+
+            Post["/api/review/tag/{tagid:guid}/reject"] = _parameters =>
+            {
+                BaseResponse br = HandleRejectTag(_parameters);
+                return Response.AsSuccess(br);
+            };
+        }
+
+        public BaseResponse HandleApproveTag(DynamicDictionary _parameters)
+        {
+            User user;
+
+            if (AuthHelper.IsAuthorized(Request, out user))
+            {
+                if (user.UserType == UserTypes.SuperUser
+                    || user.UserType == UserTypes.Administrator)
+                {
+                    Guid? tagId = _parameters["tagid"];
+
+                    if (tagId != null)
+                    {
+                        HydrantWikiManager hwm = new HydrantWikiManager();
+
+                        Tag tag = hwm.GetTag(tagId.Value);
+
+                        if (tag != null)
+                        {
+                            //Set the tag to approved
+                            tag.Status = TagStatus.Approved;
+                            hwm.Persist(tag);
+
+                            //Update the stats
+                            Guid userGuid = tag.UserGuid;
+                            UserStats stats = hwm.GetUserStats(userGuid);
+                            if (stats == null)
+                            {
+                                stats = new UserStats();
+                                stats.UserGuid = userGuid;
+                                stats.Active = true;
+                            }
+                            stats.ApprovedTagCount++;
+                            hwm.Persist(stats);
+
+                            return new ReviewTagResponse { Success = true };
+                        }
+                    }
+                }
+            }
+
+            return new ReviewTagResponse { Success = false };
+        }
+
+        public BaseResponse HandleRejectTag(DynamicDictionary _parameters)
+        {
+            User user;
+
+            if (AuthHelper.IsAuthorized(Request, out user))
+            {
+                if (user.UserType == UserTypes.SuperUser
+                    || user.UserType == UserTypes.Administrator)
+                {
+                    Guid? tagId = _parameters["tagid"];
+
+                    if (tagId != null)
+                    {
+                        HydrantWikiManager hwm = new HydrantWikiManager();
+                        Tag tag = hwm.GetTag(tagId.Value);
+
+                        if (tag != null)
+                        {
+                            //Set the tag to approved
+                            tag.Status = TagStatus.Approved;
+                            hwm.Persist(tag);
+
+                            //Update the stats
+                            Guid userGuid = tag.UserGuid;
+                            UserStats stats = hwm.GetUserStats(userGuid);
+                            if (stats == null)
+                            {
+                                stats = new UserStats();
+                                stats.UserGuid = userGuid;
+                                stats.Active = true;
+                            }
+                            stats.RejectedTagCount++;
+                            hwm.Persist(stats);
+
+                            return new ReviewTagResponse { Success = true };
+                        }
+                    }
+                }
+            }
+
+            return new ReviewTagResponse { Success = false };
         }
 
         private BaseResponse HandleGetTagsToReview(DynamicDictionary _parameters)
         {
             User user;
-            BaseResponse response;
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
