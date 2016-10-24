@@ -117,6 +117,58 @@ namespace HydrantWiki.Mobile.Api.Modules
                 BaseResponse br = HandleRejectTag(_parameters);
                 return Response.AsSuccess(br);
             };
+
+            Post["/api/review/tag/{tagid:guid}/match/{hydrantid:guid}"] = _parameters =>
+            {
+                BaseResponse br = HandleMatchTag(_parameters);
+                return Response.AsSuccess(br);
+            };
+        }
+
+        public BaseResponse HandleMatchTag(DynamicDictionary _parameters)
+        {
+            User user;
+
+            if (AuthHelper.IsAuthorized(Request, out user))
+            {
+                if (user.UserType == UserTypes.SuperUser
+                    || user.UserType == UserTypes.Administrator)
+                {
+                    Guid? tagId = _parameters["tagid"];
+
+                    if (tagId != null)
+                    {
+                        HydrantWikiManager hwm = new HydrantWikiManager();
+
+                        Tag tag = hwm.GetTag(tagId.Value);
+
+                        if (tag != null)
+                        {
+                            //TODO - Attach tag to Hydrant
+
+                            //Set the tag to approved
+                            tag.Status = TagStatus.Approved;
+                            hwm.Persist(tag);
+
+                            //Update the stats
+                            Guid userGuid = tag.UserGuid;
+                            UserStats stats = hwm.GetUserStats(userGuid);
+                            if (stats == null)
+                            {
+                                stats = new UserStats();
+                                stats.UserGuid = userGuid;
+                                stats.Active = true;
+                            }
+                            stats.ApprovedTagCount++;
+                            hwm.Persist(stats);
+
+                            return new ReviewTagResponse { Success = true };
+                        }
+                    }
+                }
+            }
+
+            return new ReviewTagResponse { Success = false };
         }
 
         public BaseResponse HandleApproveTag(DynamicDictionary _parameters)
@@ -138,6 +190,8 @@ namespace HydrantWiki.Mobile.Api.Modules
 
                         if (tag != null)
                         {
+                            //TODO - Create hydrant
+
                             //Set the tag to approved
                             tag.Status = TagStatus.Approved;
                             hwm.Persist(tag);
@@ -182,7 +236,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                         if (tag != null)
                         {
                             //Set the tag to approved
-                            tag.Status = TagStatus.Approved;
+                            tag.Status = TagStatus.Rejected;
                             hwm.Persist(tag);
 
                             //Update the stats
