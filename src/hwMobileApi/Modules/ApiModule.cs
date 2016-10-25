@@ -128,6 +128,7 @@ namespace HydrantWiki.Mobile.Api.Modules
         public BaseResponse HandleMatchTag(DynamicDictionary _parameters)
         {
             User user;
+            string message = null;
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
@@ -135,8 +136,10 @@ namespace HydrantWiki.Mobile.Api.Modules
                     || user.UserType == UserTypes.Administrator)
                 {
                     Guid? tagId = _parameters["tagid"];
+                    Guid? hydrantId = _parameters["hydrantid"];
 
-                    if (tagId != null)
+                    if (tagId != null
+                        && hydrantId != null)
                     {
                         HydrantWikiManager hwm = new HydrantWikiManager();
 
@@ -144,36 +147,57 @@ namespace HydrantWiki.Mobile.Api.Modules
 
                         if (tag != null)
                         {
-                            //TODO - Attach tag to Hydrant
+                            Hydrant hydrant = hwm.GetHydrant(hydrantId.Value);
 
-                            //Set the tag to approved
-                            tag.Status = TagStatus.Approved;
-                            hwm.Persist(tag);
-
-                            //Update the stats
-                            Guid userGuid = tag.UserGuid;
-                            UserStats stats = hwm.GetUserStats(userGuid);
-                            if (stats == null)
+                            if (hydrant != null)
                             {
-                                stats = new UserStats();
-                                stats.UserGuid = userGuid;
-                                stats.Active = true;
-                            }
-                            stats.ApprovedTagCount++;
-                            hwm.Persist(stats);
+                                //Set the tag to approved
+                                tag.HydrantGuid = hydrant.Guid;
+                                tag.Status = TagStatus.Approved;
+                                hwm.Persist(tag);
 
-                            return new ReviewTagResponse { Success = true };
+                                //Set the hydrant review
+                                hydrant.LastReviewerUserGuid = user.Guid;
+                                hwm.Persist(hydrant);
+
+                                //Update the stats
+                                Guid userGuid = tag.UserGuid;
+                                UserStats stats = hwm.GetUserStats(userGuid);
+                                if (stats == null)
+                                {
+                                    stats = new UserStats();
+                                    stats.UserGuid = userGuid;
+                                    stats.Active = true;
+                                }
+                                stats.ApprovedTagCount++;
+                                hwm.Persist(stats);
+
+                                return new ReviewTagResponse { Success = true };
+                            }
+                            else
+                            {
+                                message = "Hydrant not found";
+                            }
                         }
+                        else
+                        {
+                            message = "Tag not found";
+                        }
+                    }
+                    else
+                    {
+                        message = "TagId or HydrantId not specified";
                     }
                 }
             }
 
-            return new ReviewTagResponse { Success = false };
+            return new ReviewTagResponse { Success = false, Message = message };
         }
 
         public BaseResponse HandleApproveTag(DynamicDictionary _parameters)
         {
             User user;
+            string message = null;
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
@@ -190,36 +214,64 @@ namespace HydrantWiki.Mobile.Api.Modules
 
                         if (tag != null)
                         {
-                            //TODO - Create hydrant
-
-                            //Set the tag to approved
-                            tag.Status = TagStatus.Approved;
-                            hwm.Persist(tag);
-
-                            //Update the stats
-                            Guid userGuid = tag.UserGuid;
-                            UserStats stats = hwm.GetUserStats(userGuid);
-                            if (stats == null)
+                            if (tag.Status == TagStatus.Pending)
                             {
-                                stats = new UserStats();
-                                stats.UserGuid = userGuid;
-                                stats.Active = true;
-                            }
-                            stats.ApprovedTagCount++;
-                            hwm.Persist(stats);
+                                //Create hydrant
+                                Hydrant hydrant = new Hydrant
+                                {
+                                    Guid = Guid.NewGuid(),
+                                    Active = true,
+                                    CreationDateTime = tag.DeviceDateTime,
+                                    LastModifiedBy = tag.LastModifiedBy,
+                                    LastModifiedDateTime = tag.LastModifiedDateTime,
+                                    LastReviewerUserGuid = user.Guid,
+                                    OriginalReviewerUserGuid = user.Guid,
+                                    OriginalTagDateTime = tag.DeviceDateTime,
+                                    OriginalTagUserGuid = tag.UserGuid,
+                                    Position = tag.Position,
+                                    PrimaryImageGuid = tag.ImageGuid
+                                };
+                                hwm.Persist(hydrant);
 
-                            return new ReviewTagResponse { Success = true };
+                                //Set the tag to approved
+                                tag.Status = TagStatus.Approved;
+                                hwm.Persist(tag);
+
+                                //Update the stats
+                                Guid userGuid = tag.UserGuid;
+                                UserStats stats = hwm.GetUserStats(userGuid);
+                                if (stats == null)
+                                {
+                                    stats = new UserStats();
+                                    stats.UserGuid = userGuid;
+                                    stats.Active = true;
+                                }
+                                stats.ApprovedTagCount++;
+                                hwm.Persist(stats);
+
+                                return new ReviewTagResponse { Success = true };
+                            } else
+                            {
+                                message = "Tag already reviewed";
+                            }
+                        } else
+                        {
+                            message = "Tag not found";
                         }
+                    } else
+                    {
+                        message = "Tag not specified";
                     }
                 }
             }
 
-            return new ReviewTagResponse { Success = false };
+            return new ReviewTagResponse { Success = false, Message = message };
         }
 
         public BaseResponse HandleRejectTag(DynamicDictionary _parameters)
         {
             User user;
+            string message = null;
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
@@ -252,12 +304,19 @@ namespace HydrantWiki.Mobile.Api.Modules
                             hwm.Persist(stats);
 
                             return new ReviewTagResponse { Success = true };
+                        } else
+                        {
+                            message = "Tag not found";
                         }
+                    } 
+                    else
+                    {
+                        message = "TagId not specified";
                     }
                 }
             }
 
-            return new ReviewTagResponse { Success = false };
+            return new ReviewTagResponse { Success = false, Message = message};
         }
 
         private BaseResponse HandleGetTagsToReview(DynamicDictionary _parameters)
