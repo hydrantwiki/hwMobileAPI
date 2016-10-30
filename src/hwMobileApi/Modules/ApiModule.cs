@@ -661,52 +661,68 @@ namespace HydrantWiki.Mobile.Api.Modules
 
         public BaseResponse HangleGetHydrantsByCenterDistance(DynamicDictionary _parameters)
         {
-            double latitude = Convert.ToDouble((string)_parameters["latitude"]);
-            double longitude = Convert.ToDouble((string)_parameters["longitude"]);
-            double distance = Convert.ToDouble((string)_parameters["distance"]);
+            var response = new BaseResponse { Success = false };
+            User user;
 
-            HydrantWikiManager hwm = new HydrantWikiManager();
-            GeoPoint center = new GeoPoint(longitude, latitude);
+            if (AuthHelper.IsAuthorized(Request, out user))
+            {
+                double latitude = Convert.ToDouble((string)_parameters["latitude"]);
+                double longitude = Convert.ToDouble((string)_parameters["longitude"]);
+                double distance = Convert.ToDouble((string)_parameters["distance"]);
 
-            List<Hydrant> hydrants = hwm.GetHydrants(center, distance);
+                HydrantWikiManager hwm = new HydrantWikiManager();
+                GeoPoint center = new GeoPoint(longitude, latitude);
 
-            List<HydrantHeader> headers = ProcessHydrants(hydrants, center);
+                List<Hydrant> hydrants = hwm.GetHydrants(center, distance);
 
-            HydrantQueryResponse response = new HydrantQueryResponse {Success = true, Hydrants = headers};
+                List<HydrantHeader> headers = ProcessHydrants(hydrants, center);
 
-            hwm.LogInfo(Guid.Empty, "Retrieved Hydrants by Center and Distance");
+                response = new HydrantQueryResponse { Success = true, Hydrants = headers };
+
+                hwm.LogInfo(user.Guid, "Retrieved Hydrants by Center and Distance");
+
+                return response;
+            }
 
             return response;
         }
 
         public BaseResponse HangleGetHydrantsByGeobox(DynamicDictionary _parameters)
         {
-            HydrantWikiManager hwm = new HydrantWikiManager();
+            var response = new BaseResponse { Success = false };
+            User user;
 
-            double east = Convert.ToDouble((string)_parameters["east"]);
-            double west = Convert.ToDouble((string)_parameters["west"]);
-            double north = Convert.ToDouble((string)_parameters["north"]);
-            double south = Convert.ToDouble((string)_parameters["south"]);
-
-            int quantity = 250;
-            if (_parameters.ContainsKey("quantity"))
+            if (AuthHelper.IsAuthorized(Request, out user))
             {
-                quantity = Convert.ToInt32((string) _parameters["quantity"]);
+                HydrantWikiManager hwm = new HydrantWikiManager();
+
+                double east = Convert.ToDouble((string)_parameters["east"]);
+                double west = Convert.ToDouble((string)_parameters["west"]);
+                double north = Convert.ToDouble((string)_parameters["north"]);
+                double south = Convert.ToDouble((string)_parameters["south"]);
+
+                int quantity = 250;
+                if (_parameters.ContainsKey("quantity"))
+                {
+                    quantity = Convert.ToInt32((string)_parameters["quantity"]);
+                }
+                if (quantity > 500)
+                {
+                    quantity = 500;
+                }
+
+                GeoBox geobox = new GeoBox(east, west, north, south);
+
+                List<Hydrant> hydrants = hwm.GetHydrants(geobox, quantity);
+
+                List<HydrantHeader> headers = ProcessHydrants(hydrants);
+
+                response = new HydrantQueryResponse { Success = true, Hydrants = headers };
+
+                hwm.LogInfo(user.Guid, "Retrieved Hydrants by Geobox");
+
+                return response;
             }
-            if (quantity > 500)
-            {
-                quantity = 500;
-            }
-
-            GeoBox geobox = new GeoBox(east, west, north, south);
-
-            List<Hydrant> hydrants = hwm.GetHydrants(geobox, quantity);
-
-            List<HydrantHeader> headers = ProcessHydrants(hydrants);
-
-            HydrantQueryResponse response = new HydrantQueryResponse { Success = true, Hydrants = headers };
-
-            hwm.LogInfo(Guid.Empty, "Retrieved Hydrants by Geobox");
 
             return response;
         }
