@@ -129,6 +129,7 @@ namespace HydrantWiki.Mobile.Api.Modules
         {
             User user;
             string message = null;
+            HydrantWikiManager hwm = new HydrantWikiManager();
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
@@ -141,7 +142,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                     if (tagId != null
                         && hydrantId != null)
                     {
-                        HydrantWikiManager hwm = new HydrantWikiManager();
+                        
 
                         Tag tag = hwm.GetTag(tagId.Value);
 
@@ -172,6 +173,8 @@ namespace HydrantWiki.Mobile.Api.Modules
                                 stats.ApprovedTagCount++;
                                 hwm.Persist(stats);
 
+                                hwm.LogInfo(user.Guid, string.Format("Tag Matched ({0} to {1})", tagId, hydrantId));
+
                                 return new ReviewTagResponse { Success = true };
                             }
                             else
@@ -189,7 +192,9 @@ namespace HydrantWiki.Mobile.Api.Modules
                         message = "TagId or HydrantId not specified";
                     }
                 }
-            }
+
+                hwm.LogWarning(user.Guid, string.Format("Tag Match Error ({0})", message));
+            }           
 
             return new ReviewTagResponse { Success = false, Message = message };
         }
@@ -198,6 +203,7 @@ namespace HydrantWiki.Mobile.Api.Modules
         {
             User user;
             string message = null;
+            HydrantWikiManager hwm = new HydrantWikiManager();
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
@@ -207,9 +213,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                     Guid? tagId = _parameters["tagid"];
 
                     if (tagId != null)
-                    {
-                        HydrantWikiManager hwm = new HydrantWikiManager();
-
+                    {                         
                         Tag tag = hwm.GetTag(tagId.Value);
 
                         if (tag != null)
@@ -249,6 +253,8 @@ namespace HydrantWiki.Mobile.Api.Modules
                                 stats.ApprovedTagCount++;
                                 hwm.Persist(stats);
 
+                                hwm.LogInfo(user.Guid, string.Format("Tag Approved ({0})", tagId));
+
                                 return new ReviewTagResponse { Success = true };
                             } else
                             {
@@ -263,6 +269,8 @@ namespace HydrantWiki.Mobile.Api.Modules
                         message = "Tag not specified";
                     }
                 }
+
+                hwm.LogWarning(user.Guid, string.Format("Tag Approve Error ({0})", message));
             }
 
             return new ReviewTagResponse { Success = false, Message = message };
@@ -272,6 +280,7 @@ namespace HydrantWiki.Mobile.Api.Modules
         {
             User user;
             string message = null;
+            HydrantWikiManager hwm = new HydrantWikiManager();
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
@@ -282,7 +291,7 @@ namespace HydrantWiki.Mobile.Api.Modules
 
                     if (tagId != null)
                     {
-                        HydrantWikiManager hwm = new HydrantWikiManager();
+                       
                         Tag tag = hwm.GetTag(tagId.Value);
 
                         if (tag != null)
@@ -303,6 +312,8 @@ namespace HydrantWiki.Mobile.Api.Modules
                             stats.RejectedTagCount++;
                             hwm.Persist(stats);
 
+                            hwm.LogInfo(user.Guid, string.Format("Tag Rejected ({0})", tagId));
+
                             return new ReviewTagResponse { Success = true };
                         } else
                         {
@@ -314,6 +325,8 @@ namespace HydrantWiki.Mobile.Api.Modules
                         message = "TagId not specified";
                     }
                 }
+
+                hwm.LogWarning(user.Guid, string.Format("Tag Reject Error ({0})", message));
             }
 
             return new ReviewTagResponse { Success = false, Message = message};
@@ -336,6 +349,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                     foreach (var tag in tags)
                     {
                         TagToReview reviewTag = new TagToReview();
+                        reviewTag.TagId = tag.Guid;
                         reviewTag.ImageGuid = tag.ImageGuid;
 
                         TGUser tagUser = hwm.GetUser(tag.UserGuid);
@@ -365,7 +379,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                             List<Hydrant> nearby = hwm.GetHydrants(
                                 reviewTag.Position.Latitude,
                                 reviewTag.Position.Longitude,
-                                100);
+                                200);
 
                             reviewTag.NearbyHydrants = ProcessHydrants(nearby, tag.Position);
                         }

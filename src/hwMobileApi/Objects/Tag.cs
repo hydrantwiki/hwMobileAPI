@@ -11,6 +11,7 @@ namespace HydrantWiki.Mobile.Api.Objects
 
         public Tag(Library.Objects.Tag _source)
         {
+            TagId = _source.Guid;
             ImageGuid = _source.ImageGuid;
             TagDateTime = _source.DeviceDateTime;
 
@@ -25,6 +26,7 @@ namespace HydrantWiki.Mobile.Api.Objects
             }
         }
 
+        public Guid TagId { get; set; }
         public Guid? ImageGuid { get; set; }
         public Position Position { get; set; }
         public DateTime TagDateTime { get; set; }
