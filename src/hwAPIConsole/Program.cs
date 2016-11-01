@@ -2,11 +2,7 @@
 using Mono.Unix.Native;
 using Nancy.Hosting.Self;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TreeGecko.Library.Common.Helpers;
 
 namespace hwAPIConsole
