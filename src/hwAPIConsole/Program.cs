@@ -1,4 +1,6 @@
-﻿using Nancy.Hosting.Self;
+﻿using Mono.Unix;
+using Mono.Unix.Native;
+using Nancy.Hosting.Self;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,8 +22,22 @@ namespace hwAPIConsole
             {
                 host.Start();
                 TraceFileHelper.Info("Started webserver");
-                
-                Console.ReadKey();
+
+                if (Type.GetType("Mono.Runtime") != null)
+                {
+                    // on mono, processes will usually run as daemons - this allows you to listen
+                    // for termination signals (ctrl+c, shutdown, etc) and finalize correctly
+                    UnixSignal.WaitAny(new[] {
+                            new UnixSignal(Signum.SIGINT),
+                            new UnixSignal(Signum.SIGTERM),
+                            new UnixSignal(Signum.SIGQUIT),
+                            new UnixSignal(Signum.SIGHUP)
+                    });
+                } else {
+                    Console.ReadKey();
+                }                             
+
+                TraceFileHelper.Info("Stopping webserver");
                 host.Stop();
             }
         }
