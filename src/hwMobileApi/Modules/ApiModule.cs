@@ -531,35 +531,36 @@ namespace HydrantWiki.Mobile.Api.Modules
 
         private BaseResponse HandleImagePost(DynamicDictionary _parameters)
         {
+            HydrantWikiManager hwManager = new HydrantWikiManager();
+
             var response = new BaseResponse { Success = false };
             User user;
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
-                HydrantWikiManager hwManager = new HydrantWikiManager();
-
-                byte[] fileData = null;
-                string fileName = null;
-
-                if (Request.Files.Any())
+                try
                 {
-                    HttpFile file = Request.Files.First();
+                    byte[] fileData = null;
+                    string fileName = null;
 
-                    long length = file.Value.Length;
-                    fileData = new byte[(int) length];
-                    file.Value.Read(fileData, 0, (int) length);
-                    fileName = file.Name;
-                }
-
-                if (fileName != null)
-                {
-                    string tempGuid = Path.GetFileNameWithoutExtension(fileName);
-                    Guid imageGuid;
-
-                    if (Guid.TryParse(tempGuid, out imageGuid))
+                    if (Request.Files.Any())
                     {
-                        try
+                        HttpFile file = Request.Files.First();
+
+                        long length = file.Value.Length;
+                        fileData = new byte[(int)length];
+                        file.Value.Read(fileData, 0, (int)length);
+                        fileName = file.Name;
+                    }
+
+                    if (fileName != null)
+                    {
+                        string tempGuid = Path.GetFileNameWithoutExtension(fileName);
+                        Guid imageGuid;
+
+                        if (Guid.TryParse(tempGuid, out imageGuid))
                         {
+
                             hwManager.PersistOriginal(imageGuid, ".jpg", "image/jpg", fileData);
                             hwManager.LogVerbose(user.Guid, "Tag Image Saved");
 
@@ -575,12 +576,14 @@ namespace HydrantWiki.Mobile.Api.Modules
 
                             response.Success = true;
                             return response;
-                        }
-                        catch (Exception ex)
-                        {
-                            hwManager.LogException(user.Guid, ex);
+
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    TraceFileHelper.Error("Failure to post image");
+                    hwManager.LogException(user.Guid, ex);
                 }
             }
             else
@@ -594,37 +597,37 @@ namespace HydrantWiki.Mobile.Api.Modules
 
         private BaseResponse HandleTagPost(DynamicDictionary _parameters)
         {
+            HydrantWikiManager hwManager = new HydrantWikiManager();
+
             var response = new TagPostResponse { Success = false };
             User user;
 
             if (AuthHelper.IsAuthorized(Request, out user))
             {
-                HydrantWikiManager hwManager = new HydrantWikiManager();
-
-                string json = Request.Body.ReadAsString();
-
-                Objects.Tag tag = JsonConvert.DeserializeObject<Objects.Tag>(json);
-
-                if (tag != null)
+                try
                 {
-                    if (tag.Position != null)
+                    string json = Request.Body.ReadAsString();
+
+                    Objects.Tag tag = JsonConvert.DeserializeObject<Objects.Tag>(json);
+
+                    if (tag != null)
                     {
                         if (tag.Position != null)
                         {
-                            var dbTag = new HydrantWiki.Library.Objects.Tag
+                            if (tag.Position != null)
                             {
-                                Active = true,
-                                DeviceDateTime = tag.Position.DeviceDateTime,
-                                LastModifiedDateTime = DateTime.UtcNow,
-                                UserGuid = user.Guid,
-                                VersionTimeStamp = DateTime.UtcNow.ToString("u"),
-                                Position = new GeoPoint(tag.Position.Longitude, tag.Position.Latitude),
-                                ImageGuid = tag.ImageGuid,
-                                Status = TagStatus.Pending
-                            };
+                                var dbTag = new HydrantWiki.Library.Objects.Tag
+                                {
+                                    Active = true,
+                                    DeviceDateTime = tag.Position.DeviceDateTime,
+                                    LastModifiedDateTime = DateTime.UtcNow,
+                                    UserGuid = user.Guid,
+                                    VersionTimeStamp = DateTime.UtcNow.ToString("u"),
+                                    Position = new GeoPoint(tag.Position.Longitude, tag.Position.Latitude),
+                                    ImageGuid = tag.ImageGuid,
+                                    Status = TagStatus.Pending
+                                };
 
-                            try
-                            {
                                 hwManager.Persist(dbTag);
                                 hwManager.LogVerbose(user.Guid, "Tag Saved");
 
@@ -633,21 +636,23 @@ namespace HydrantWiki.Mobile.Api.Modules
 
                                 response.Success = true;
                                 return response;
-                            }
-                            catch (Exception ex)
-                            {
-                                hwManager.LogException(user.Guid, ex);
-                            }
-                        }
-                        else
-                        {
-                            //No position
-                            hwManager.LogWarning(user.Guid, "No position");
 
-                            response.Message = "No position";
-                            return response;
+                            }
+                            else
+                            {
+                                //No position
+                                hwManager.LogWarning(user.Guid, "No position");
+
+                                response.Message = "No position";
+                                return response;
+                            }
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    TraceFileHelper.Error("Failure to post tag");
+                    hwManager.LogException(user.Guid, ex);
                 }
             }
             else
