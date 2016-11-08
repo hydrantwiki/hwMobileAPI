@@ -142,8 +142,6 @@ namespace HydrantWiki.Mobile.Api.Modules
                     if (tagId != null
                         && hydrantId != null)
                     {
-                        
-
                         Tag tag = hwm.GetTag(tagId.Value);
 
                         if (tag != null)
@@ -271,6 +269,9 @@ namespace HydrantWiki.Mobile.Api.Modules
                 }
 
                 hwm.LogWarning(user.Guid, string.Format("Tag Approve Error ({0})", message));
+            } else
+            {
+                LogUnauthorized(Request);
             }
 
             return new ReviewTagResponse { Success = false, Message = message };
@@ -327,6 +328,10 @@ namespace HydrantWiki.Mobile.Api.Modules
                 }
 
                 hwm.LogWarning(user.Guid, string.Format("Tag Reject Error ({0})", message));
+            }
+            else
+            {
+                LogUnauthorized(Request);               
             }
 
             return new ReviewTagResponse { Success = false, Message = message};
@@ -405,6 +410,7 @@ namespace HydrantWiki.Mobile.Api.Modules
             }
             else
             {
+                LogUnauthorized(Request);
                 return new BaseResponse
                 {
                     Error = "Not authenticated",
@@ -441,6 +447,7 @@ namespace HydrantWiki.Mobile.Api.Modules
             }
             else
             {
+                LogUnauthorized(Request);
                 response = new BaseResponse
                 {
                     Success = false,
@@ -467,6 +474,7 @@ namespace HydrantWiki.Mobile.Api.Modules
             }
             else
             {
+                LogUnauthorized(Request);
                 response = new BaseResponse
                 {
                     Success = false,
@@ -494,6 +502,7 @@ namespace HydrantWiki.Mobile.Api.Modules
             }
             else
             {
+                LogUnauthorized(Request);
                 response = new BaseResponse
                 {
                     Success = false,
@@ -572,11 +581,10 @@ namespace HydrantWiki.Mobile.Api.Modules
                             fileData = ImageHelper.GetThumbnailBytesOfMaxSize(original, 100);
                             hwManager.PersistThumbnailImage(imageGuid, ".jpg", "image/jpg", fileData);
 
-                            TraceFileHelper.Info("Saved Image ({0})", imageGuid);
+                            hwManager.LogInfo(user.Guid, string.Format("Saved Image ({0})", imageGuid));
 
                             response.Success = true;
                             return response;
-
                         }
                     }
                 }
@@ -588,11 +596,18 @@ namespace HydrantWiki.Mobile.Api.Modules
             }
             else
             {
+                LogUnauthorized(Request);
                 response.Error = "Unauthorized";
                 response.Message = "Reauthenticate";
             }
 
             return response;
+        }
+
+        private void LogUnauthorized(Request _request)
+        {
+            string username = _request.Headers["Username"].First();
+            TraceFileHelper.Warning("{0} - {1} ({2})", _request.UserHostAddress, _request.Url, username);
         }
 
         private BaseResponse HandleTagPost(DynamicDictionary _parameters)
@@ -657,6 +672,7 @@ namespace HydrantWiki.Mobile.Api.Modules
             }
             else
             {
+                LogUnauthorized(Request);
                 response.Error = "Unauthorized";
                 response.Message = "Reauthenticate";
             }
@@ -687,6 +703,9 @@ namespace HydrantWiki.Mobile.Api.Modules
                 hwm.LogInfo(user.Guid, "Retrieved Hydrants by Center and Distance");
 
                 return response;
+            } else
+            {
+                LogUnauthorized(Request);
             }
 
             return response;
@@ -727,6 +746,9 @@ namespace HydrantWiki.Mobile.Api.Modules
                 hwm.LogInfo(user.Guid, "Retrieved Hydrants by Geobox");
 
                 return response;
+            } else
+            {
+                LogUnauthorized(Request);
             }
 
             return response;
