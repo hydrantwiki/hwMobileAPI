@@ -46,6 +46,12 @@ namespace HydrantWiki.Mobile.Api.Modules
                 return Response.AsSuccess(br);
             };
 
+            Get["/api/user/inuse/{email}"] = _parameters =>
+            {
+                BaseResponse br = EmailInUse(_parameters);
+                return Response.AsSuccess(br);
+            };
+
             Get["/api/tags/count"] = _parameters =>
             {
                 BaseResponse br = HangleGetTagCount(_parameters);
@@ -537,6 +543,23 @@ namespace HydrantWiki.Mobile.Api.Modules
 
             return response;
         }
+
+        private BaseResponse EmailInUse(DynamicDictionary _parameters)
+        {
+            HydrantWikiManager hwm = new HydrantWikiManager();
+            IsAvailableResponse response = new IsAvailableResponse { Available = false, Success = true };
+
+            string email = _parameters["email"];
+            User user = hwm.GetUserByEmail(UserSources.HydrantWiki, email);
+
+            if (user == null)
+            {
+                response.Available = true;
+            }
+
+            return response;
+        }
+
 
         private BaseResponse HandleImagePost(DynamicDictionary _parameters)
         {
