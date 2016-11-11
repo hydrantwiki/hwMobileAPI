@@ -534,11 +534,17 @@ namespace HydrantWiki.Mobile.Api.Modules
             IsAvailableResponse response = new IsAvailableResponse {Available = false, Success = true};
 
             string username = _parameters["username"];
-            User user = hwm.GetUser(UserSources.HydrantWiki, username);
 
-            if (user == null)
+            if (username != null)
             {
-                response.Available = true;
+                User user = hwm.GetUser(UserSources.HydrantWiki, username);
+
+                TraceFileHelper.Info("Check if username exists ({0})", username);
+
+                if (user == null)
+                {
+                    response.Available = true;
+                }
             }
 
             return response;
@@ -550,11 +556,16 @@ namespace HydrantWiki.Mobile.Api.Modules
             IsAvailableResponse response = new IsAvailableResponse { Available = false, Success = true };
 
             string email = _parameters["email"];
-            User user = hwm.GetUserByEmail(UserSources.HydrantWiki, email);
-
-            if (user == null)
+            if (email != null)
             {
-                response.Available = true;
+                User user = hwm.GetUserByEmail(UserSources.HydrantWiki, email);
+
+                TraceFileHelper.Info("Check if email in use ({0})", email);
+
+                if (user == null)
+                {
+                    response.Available = true;
+                }
             }
 
             return response;
