@@ -20,6 +20,7 @@ using Tag = HydrantWiki.Library.Objects.Tag;
 using User = HydrantWiki.Library.Objects.User;
 using TreeGecko.Library.Common.Enums;
 using HydrantWiki.Library.Helpers;
+using System.Collections.Specialized;
 
 namespace HydrantWiki.Mobile.Api.Modules
 {
@@ -40,6 +41,12 @@ namespace HydrantWiki.Mobile.Api.Modules
                 return Response.AsSuccess(br);
             };
 
+            Get["/api/user/validate/{token}"] = _parameters =>
+            {
+                BaseResponse br = ValidateEmail(_parameters);
+                return Response.AsSuccess(br);
+            };
+
             Get["/api/user/isavailable/{username}"] = _parameters =>
             {
                 BaseResponse br = IsAvailable(_parameters);
@@ -49,6 +56,12 @@ namespace HydrantWiki.Mobile.Api.Modules
             Get["/api/user/inuse/{email}"] = _parameters =>
             {
                 BaseResponse br = EmailInUse(_parameters);
+                return Response.AsSuccess(br);
+            };
+
+            Post["/api/user/create"] = _parameters =>
+            {
+                BaseResponse br = CreateAccount(_parameters);
                 return Response.AsSuccess(br);
             };
 
@@ -129,6 +142,139 @@ namespace HydrantWiki.Mobile.Api.Modules
                 BaseResponse br = HandleMatchTag(_parameters);
                 return Response.AsSuccess(br);
             };
+        }
+
+        public Response ValidateEmail(DynamicDictionary _parameters)
+        {
+            const string success = @"
+                <html>
+                    <head>
+                    </head>
+                    <body>
+                        <p>You have successfully validated your email with HydrantWiki.</p>
+                        <p><a href=""www.hydrantwiki.com"">HydrantWiki</a></p>
+                    </body>
+                </html>";
+
+            const string failure = @"
+                <html>
+                    <head>
+                    </head>
+                    <body>
+                        <p>Unable to validate your email with HydrantWiki.</p>
+                        <p><a href=""www.hydrantwiki.com"">HydrantWiki</a></p>
+                    </body>
+                </html>";
+
+            string validationToken = _parameters["token"];
+
+            HydrantWikiManager hwManager = new HydrantWikiManager();
+
+            if (!string.IsNullOrEmpty(validationToken))
+            {
+                TGUserEmailValidation uev = hwManager.GetTGUserEmailValidation(validationToken);
+
+                if (uev != null
+                    && uev.ParentGuid != null)
+                {
+                    User user = (User)hwManager.GetUser(uev.ParentGuid.Value);
+
+                    if (user != null)
+                    {
+                        user.IsVerified = true;
+
+                        hwManager.Persist(user);
+                        hwManager.Delete(uev);
+                        hwManager.LogInfo(user.Guid, string.Format("Validated email address ({0})", user.EmailAddress));
+
+                        Response successResponse = Response.AsText(success);
+                        successResponse.ContentType = "text/html";
+                        return successResponse;
+                    }
+                    else
+                    {
+                        //User not found.
+                        hwManager.LogWarning(Guid.Empty, string.Format("User not found (Token:{0})", validationToken));
+                    }
+                }
+                else
+                {
+                    //Validation text not found in database
+                    hwManager.LogWarning(Guid.Empty, string.Format("Validated token not found ({0})", validationToken));
+                }
+            }
+            else
+            {
+                //Validation text not supplied.
+                hwManager.LogWarning(Guid.Empty, "Validation token not supplied");
+            }
+
+            Response failureResponse = Response.AsText(failure);
+            failureResponse.ContentType = "text/html";
+            return failureResponse;
+        }
+
+        public BaseResponse CreateAccount(DynamicDictionary _parameters)
+        {
+            BaseResponse response = new BaseResponse();
+            HydrantWikiManager hwm = new HydrantWikiManager();
+
+            try
+            {
+                string json = Request.Body.ReadAsString();
+                Objects.CreateAccount account = JsonConvert.DeserializeObject<Objects.CreateAccount>(json);
+
+                User user = hwm.GetUser(UserSources.HydrantWiki, account.Username);
+                if (user == null)
+                {
+                    user = hwm.GetUserByEmail(UserSources.HydrantWiki, account.Email);
+                    if (user == null)
+                    {
+                        user = new User();
+                        user.Guid = Guid.NewGuid();
+                        user.Active = true;
+                        user.DisplayName = account.Username;
+                        user.Username = UserSources.HydrantWiki;
+                        user.UserType = UserTypes.User;
+                        user.IsVerified = false;
+                        hwm.Persist(user);
+
+                        TGUserPassword userPassword = TGUserPassword.GetNew(user.Guid, user.Username, account.Password);
+                        hwm.Persist(userPassword);
+
+                        TGUserEmailValidation validation = new TGUserEmailValidation(user);
+                        hwm.Persist(validation);
+
+                        NameValueCollection nvc = new NameValueCollection
+                        {
+                            {"SystemUrl", Config.GetSettingValue("SystemUrl")},
+                            {"ValidationText", validation.ValidationText }
+                        };
+                        hwm.SendCannedEmail(user, CannedEmailNames.ValidateEmailAddress, nvc);
+                    }
+                    else
+                    {
+                        response.Success = false;
+                        response.Message = "Email already in use.";
+                    }
+                } else
+                {
+                    response.Success = false;
+                    response.Message = "Username already exists.";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "An error occurred";
+                response.Error = "An error occurred";
+                hwm.LogException(Guid.Empty, ex);
+            }
+
+
+
+            return response;
         }
 
         public BaseResponse HandleMatchTag(DynamicDictionary _parameters)

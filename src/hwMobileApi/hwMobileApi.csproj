@@ -98,6 +98,7 @@
     <Compile Include="Extensions\ResponseExtension.cs" />
     <Compile Include="Helpers\AuthHelper.cs" />
     <Compile Include="Modules\ApiModule.cs" />
+    <Compile Include="Objects\CreateAccount.cs" />
     <Compile Include="Objects\GeoLocation.cs" />
     <Compile Include="Objects\HydrantHeader.cs" />
     <Compile Include="Objects\Position.cs" />

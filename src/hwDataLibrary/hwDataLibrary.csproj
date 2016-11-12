@@ -121,6 +121,7 @@
     <Compile Include="Enums\TagPositionAction.cs" />
     <Compile Include="Helpers\HydrantCSVHelper.cs" />
     <Compile Include="Helpers\ImageProcessingHelper.cs" />
+    <Compile Include="Helpers\StreamHelper.cs" />
     <Compile Include="Helpers\TagHelper.cs" />
     <Compile Include="Managers\HydrantWikiManager.cs" />
     <Compile Include="Managers\HydrantWikiStructureManager.cs" />
