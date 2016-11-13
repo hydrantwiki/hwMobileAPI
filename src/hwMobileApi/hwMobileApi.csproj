@@ -101,6 +101,7 @@
     <Compile Include="Objects\CreateAccount.cs" />
     <Compile Include="Objects\GeoLocation.cs" />
     <Compile Include="Objects\HydrantHeader.cs" />
+    <Compile Include="Objects\ChangePassword.cs" />
     <Compile Include="Objects\Position.cs" />
     <Compile Include="Objects\Tag.cs" />
     <Compile Include="Objects\TagToReview.cs" />

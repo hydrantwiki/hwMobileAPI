@@ -43,8 +43,8 @@ namespace HydrantWiki.Mobile.Api.Modules
 
             Get["/api/user/validate/{token}"] = _parameters =>
             {
-                BaseResponse br = ValidateEmail(_parameters);
-                return Response.AsSuccess(br);
+                Response br = ValidateEmail(_parameters);
+                return br;
             };
 
             Get["/api/user/isavailable/{username}"] = _parameters =>
@@ -56,6 +56,12 @@ namespace HydrantWiki.Mobile.Api.Modules
             Get["/api/user/inuse/{email}"] = _parameters =>
             {
                 BaseResponse br = EmailInUse(_parameters);
+                return Response.AsSuccess(br);
+            };
+
+            Post["/api/user/password"] = _parameters =>
+            {
+                BaseResponse br = ChangePassword(_parameters);
                 return Response.AsSuccess(br);
             };
 
@@ -234,7 +240,9 @@ namespace HydrantWiki.Mobile.Api.Modules
                         user.Guid = Guid.NewGuid();
                         user.Active = true;
                         user.DisplayName = account.Username;
-                        user.Username = UserSources.HydrantWiki;
+                        user.Username = account.Username;
+                        user.EmailAddress = account.Email;
+                        user.UserSource = UserSources.HydrantWiki;
                         user.UserType = UserTypes.User;
                         user.IsVerified = false;
                         hwm.Persist(user);
@@ -251,6 +259,11 @@ namespace HydrantWiki.Mobile.Api.Modules
                             {"ValidationText", validation.ValidationText }
                         };
                         hwm.SendCannedEmail(user, CannedEmailNames.ValidateEmailAddress, nvc);
+                        hwm.LogInfo(user.Guid, "User created");
+
+                        response.Success = true;
+                        response.Message = "Please check your email to finish activating your account";
+                        return response;
                     }
                     else
                     {
@@ -263,6 +276,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                     response.Message = "Username already exists.";
                 }
 
+                hwm.LogWarning(Guid.Empty, response.Message);
             }
             catch (Exception ex)
             {
@@ -271,8 +285,6 @@ namespace HydrantWiki.Mobile.Api.Modules
                 response.Error = "An error occurred";
                 hwm.LogException(Guid.Empty, ex);
             }
-
-
 
             return response;
         }
@@ -665,6 +677,59 @@ namespace HydrantWiki.Mobile.Api.Modules
 
             return response;
         }
+
+        private BaseResponse ChangePassword(DynamicDictionary _parameters)
+        {
+            User user;
+            BaseResponse response = new BaseResponse();
+
+            if (AuthHelper.IsAuthorized(Request, out user))
+            {
+                HydrantWikiManager hwm = new HydrantWikiManager();
+
+                string json = Request.Body.ReadAsString();
+                Objects.ChangePassword cp = JsonConvert.DeserializeObject<Objects.ChangePassword>(json);
+
+                if (cp != null)                    
+                {
+                    if (cp.Username == user.Username
+                        && user.UserSource == UserSources.HydrantWiki)
+                    {
+                        if (hwm.ValidateUser(user, cp.ExistingPassword))
+                        {
+                            TGUserPassword userPassword = TGUserPassword.GetNew(user.Guid, user.Username, cp.NewPassword);
+                            hwm.Persist(userPassword);
+                        }
+                        else
+                        {
+                            //Existing password doesn't match
+                            response.Message = "Passwords don't match";
+                            response.Success = false;
+                        }
+                    }
+                    else
+                    {
+                        //Usernames don't match
+                        response.Message = "Mismatched user";
+                        response.Success = false;
+                    }
+                } else
+                {
+                    //no body
+                    response.Message = "No body";
+                    response.Success = false;
+                }
+            }
+            else
+            {
+                LogUnauthorized(Request);
+                response.Message = "Unauthorized";
+                response.Success = false;
+            }
+
+            return response;
+        }
+
 
         private BaseResponse Authorize(
             DynamicDictionary _parameters)
