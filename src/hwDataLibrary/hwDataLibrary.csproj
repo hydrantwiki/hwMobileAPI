@@ -113,6 +113,7 @@
     <Compile Include="Constants\TagStatus.cs" />
     <Compile Include="Constants\TagTypes.cs" />
     <Compile Include="Constants\UserSources.cs" />
+    <Compile Include="DAOs\AuthenticationFailureDAO.cs" />
     <Compile Include="DAOs\HydrantDAO.cs" />
     <Compile Include="DAOs\HydrantImageDAO.cs" />
     <Compile Include="DAOs\TagDAO.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="Managers\HydrantWikiManager.cs" />
     <Compile Include="Managers\HydrantWikiStructureManager.cs" />
     <Compile Include="Objects\Address.cs" />
+    <Compile Include="Objects\AuthenticationFailure.cs" />
     <Compile Include="Objects\Hydrant.cs" />
     <Compile Include="Objects\HydrantImage.cs" />
     <Compile Include="Objects\NearbyHydrant.cs" />

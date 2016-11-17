@@ -699,12 +699,19 @@ namespace HydrantWiki.Mobile.Api.Modules
                         {
                             TGUserPassword userPassword = TGUserPassword.GetNew(user.Guid, user.Username, cp.NewPassword);
                             hwm.Persist(userPassword);
+
+                            response.Message = "Password changed";
+                            response.Success = true;
+
+                            hwm.LogInfo(user.Guid, response.Message);
                         }
                         else
                         {
                             //Existing password doesn't match
-                            response.Message = "Passwords don't match";
+                            response.Message = "Existing password does not match";
                             response.Success = false;
+
+                            hwm.LogWarning(user.Guid, response.Message);
                         }
                     }
                     else
@@ -712,12 +719,16 @@ namespace HydrantWiki.Mobile.Api.Modules
                         //Usernames don't match
                         response.Message = "Mismatched user";
                         response.Success = false;
+
+                        hwm.LogWarning(user.Guid, response.Message);
                     }
                 } else
                 {
                     //no body
                     response.Message = "No body";
                     response.Success = false;
+
+                    hwm.LogWarning(user.Guid, response.Message);
                 }
             }
             else

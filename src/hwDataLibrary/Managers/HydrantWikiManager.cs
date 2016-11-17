@@ -28,6 +28,30 @@ namespace HydrantWiki.Library.Managers
            
         }
 
+        #region AuthenticationFailures
+
+        public int GetFailureCount(Guid _userGuid, DateTime _since)
+        {
+            AuthenticationFailureDAO dao = new AuthenticationFailureDAO(MongoDB);
+            return dao.GetCountSince(_userGuid, _since.Ticks);
+        }
+
+        public void RecordAuthenticationFailure(Guid _userGuid)
+        {
+            AuthenticationFailureDAO dao = new AuthenticationFailureDAO(MongoDB);
+
+            AuthenticationFailure failure = new AuthenticationFailure
+            {
+                Guid = Guid.NewGuid(),
+                ParentGuid = _userGuid,
+                FailureTicks = DateTime.UtcNow.Ticks
+            };
+
+            dao.Persist(failure);
+        }
+
+        #endregion
+
         #region Users
         /// <summary>
         /// 
