@@ -98,11 +98,14 @@
     <Compile Include="Extensions\ResponseExtension.cs" />
     <Compile Include="Helpers\AuthHelper.cs" />
     <Compile Include="Modules\ApiModule.cs" />
+    <Compile Include="Objects\AuthObject.cs" />
     <Compile Include="Objects\CreateAccount.cs" />
     <Compile Include="Objects\GeoLocation.cs" />
     <Compile Include="Objects\HydrantHeader.cs" />
     <Compile Include="Objects\ChangePassword.cs" />
     <Compile Include="Objects\Position.cs" />
+    <Compile Include="Objects\ResetPassword.cs" />
+    <Compile Include="Objects\ResetRequest.cs" />
     <Compile Include="Objects\Tag.cs" />
     <Compile Include="Objects\TagToReview.cs" />
     <Compile Include="Objects\User.cs" />

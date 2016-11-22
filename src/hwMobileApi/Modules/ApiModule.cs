@@ -59,6 +59,18 @@ namespace HydrantWiki.Mobile.Api.Modules
                 return Response.AsSuccess(br);
             };
 
+            Post["/api/user/resetpasswordrequest"] = _parameters =>
+            {
+                BaseResponse br = ResetPasswordRequest(_parameters);
+                return Response.AsSuccess(br);
+            };
+
+            Post["/api/user/resetpassword"] = _parameters =>
+            {
+                BaseResponse br = ResetPassword(_parameters);
+                return Response.AsSuccess(br);
+            };
+
             Post["/api/user/password"] = _parameters =>
             {
                 BaseResponse br = ChangePassword(_parameters);
@@ -148,6 +160,125 @@ namespace HydrantWiki.Mobile.Api.Modules
                 BaseResponse br = HandleMatchTag(_parameters);
                 return Response.AsSuccess(br);
             };
+        }
+
+        public BaseResponse ResetPasswordRequest(DynamicDictionary _parameters)
+        {
+            BaseResponse response = new BaseResponse();
+
+            string json = Request.Body.ReadAsString();
+
+            if (json != null)
+            {
+                ResetRequest rr = JsonConvert.DeserializeObject<ResetRequest>(json);
+                if (rr.Email != null
+                    && rr.InstallId != null)
+                {
+                    HydrantWikiManager manager = new HydrantWikiManager();
+                    User user = manager.GetUserByEmail(UserSources.HydrantWiki, rr.Email);
+                    if (user != null)
+                    {
+                        //Send reset password email
+                        PasswordReset reset = PasswordReset.GetNewRequest(user.Guid);
+                        manager.Persist(reset);
+
+                        NameValueCollection nvc = new NameValueCollection
+                        {
+                            {"Code", reset.Code }
+                        };
+
+                        manager.SendCannedEmail(user, CannedEmailNames.ResetPasswordEmail, nvc);
+                        manager.LogInfo(
+                            user.Guid,
+                            string.Format(
+                                "Password Reset Request for user {0} on {1}",
+                                user.Username,
+                                rr.InstallId));
+
+                        response.Success = true;
+                        response.Message = "Password reset email sent.";
+                    }
+                    else
+                    {
+                        response.Success = false;
+                        response.Message = "";
+                    }
+                }
+            }
+
+            return response;
+        }
+
+        public BaseResponse ResetPassword(DynamicDictionary _parameters)
+        {
+            BaseResponse response = new BaseResponse();
+
+            string json = Request.Body.ReadAsString();
+
+            if (json != null)
+            {
+                ResetPassword rr = JsonConvert.DeserializeObject<ResetPassword>(json);
+                if (rr.Email != null
+                    && rr.InstallId != null
+                    && rr.Code != null
+                    && rr.NewPassword != null)
+                {
+                    HydrantWikiManager manager = new HydrantWikiManager();
+                    User user = manager.GetUserByEmail(UserSources.HydrantWiki, rr.Email);
+                    if (user != null)
+                    {
+                        DateTime now = DateTime.UtcNow;
+                        PasswordReset pr = manager.GetPasswordReset(user.Guid, rr.Code);
+
+                        if (pr != null)
+                        {
+                            if (pr.CreationDateTime > now.AddHours(-2))
+                            {
+                                TGUserPassword userPassword = TGUserPassword.GetNew(
+                                    user.Guid,
+                                    user.Username,
+                                    rr.NewPassword);
+                                manager.Persist(userPassword);
+
+                                pr.Active = false;
+                                manager.Persist(pr);
+
+                                manager.LogInfo(user.Guid, "Password successfully reset");
+
+                                response.Success = true;
+                                response.Message = "Password successfully reset.";
+                            }
+                            else
+                            {
+                                manager.LogWarning(user.Guid, "Password Reset request has expired");
+                                response.Success = false;
+                                response.Message = "Password Reset request has expired";
+                            }
+                        }
+                        else
+                        {
+                            manager.LogWarning(user.Guid, "Invalid reset code");
+                            response.Success = false;
+                            response.Message = "Invalid reset code.";
+                        }
+                    }
+                    else
+                    {
+                        TraceFileHelper.Warning("User not found ({0})", rr.Email);
+                        response.Success = false;
+                        response.Message = "User not found.";
+                    }
+                }
+                else
+                {
+                    response.Message = "Invalid information supplied";
+                }
+            } else
+            {
+                response.Message = "Body not supplied";
+            }
+
+            return response;
         }
 
         public Response ValidateEmail(DynamicDictionary _parameters)
@@ -707,6 +838,9 @@ namespace HydrantWiki.Mobile.Api.Modules
                         }
                         else
                         {
+                            //Record failure to test if this is an attack. 
+                            hwm.RecordAuthenticationFailure(user.Guid);
+
                             //Existing password doesn't match
                             response.Message = "Existing password does not match";
                             response.Success = false;

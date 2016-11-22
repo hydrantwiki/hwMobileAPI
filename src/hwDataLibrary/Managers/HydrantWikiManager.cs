@@ -11,7 +11,6 @@ using TreeGecko.Library.Common.Objects;
 using TreeGecko.Library.Geospatial.Enums;
 using TreeGecko.Library.Geospatial.Helpers;
 using TreeGecko.Library.Geospatial.Objects;
-using TreeGecko.Library.Net.DAOs;
 using TreeGecko.Library.Net.Helpers;
 using TreeGecko.Library.Net.Interfaces;
 using TreeGecko.Library.Net.Managers;
@@ -30,7 +29,7 @@ namespace HydrantWiki.Library.Managers
 
         #region AuthenticationFailures
 
-        public int GetFailureCount(Guid _userGuid, DateTime _since)
+        public int GetAuthenticationFailureCount(Guid _userGuid, DateTime _since)
         {
             AuthenticationFailureDAO dao = new AuthenticationFailureDAO(MongoDB);
             return dao.GetCountSince(_userGuid, _since.Ticks);
@@ -41,6 +40,30 @@ namespace HydrantWiki.Library.Managers
             AuthenticationFailureDAO dao = new AuthenticationFailureDAO(MongoDB);
 
             AuthenticationFailure failure = new AuthenticationFailure
+            {
+                Guid = Guid.NewGuid(),
+                ParentGuid = _userGuid,
+                FailureTicks = DateTime.UtcNow.Ticks
+            };
+
+            dao.Persist(failure);
+        }
+
+        #endregion
+
+        #region ResetFailures
+
+        public int GetResetFailureCount(Guid _userGuid, DateTime _since)
+        {
+            ResetFailureDAO dao = new ResetFailureDAO(MongoDB);
+            return dao.GetCountSince(_userGuid, _since.Ticks);
+        }
+
+        public void RecordResetFailure(Guid _userGuid)
+        {
+            ResetFailureDAO dao = new ResetFailureDAO(MongoDB);
+
+            ResetFailure failure = new ResetFailure
             {
                 Guid = Guid.NewGuid(),
                 ParentGuid = _userGuid,
@@ -580,6 +603,56 @@ namespace HydrantWiki.Library.Managers
 
         #endregion
 
+        #region PasswordReset
+
+        public void Persist(PasswordReset _passwordReset)
+        {
+            PasswordResetDao dao = new PasswordResetDao(MongoDB);
+
+            //First inactivate any existing
+            dao.InactivatePasswordResetRequests(_passwordReset.ParentGuid.Value);
+
+            //Second save the new request
+            dao.Persist(_passwordReset);
+        }
+
+        public PasswordReset GetPasswordReset(Guid _userGuid, string _code)
+        {
+            PasswordResetDao dao = new PasswordResetDao(MongoDB);
+            return dao.Get(_userGuid, _code);
+        }
+
+        #endregion
+
+        #region Install
+
+        public void LogUserToInstall(Guid _installId, string _username)
+        {
+            InstallDAO dao = new InstallDAO(MongoDB);
+
+            Install install = dao.Get(_installId);
+            if (install == null)
+            {
+                install = new Install
+                {
+                    Guid = _installId,
+                    Usernames = new List<string> { _username }
+                };
+
+                dao.Persist(install);
+            }
+            else
+            {
+                if (!install.Usernames.Contains(_username))
+                {
+                    install.Usernames.Add(_username);
+
+                    dao.Persist(install);
+                }
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 

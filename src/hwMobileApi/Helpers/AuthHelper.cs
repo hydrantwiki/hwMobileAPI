@@ -7,6 +7,8 @@ using HydrantWiki.Mobile.Api.ResponseObjects;
 using Nancy;
 using TreeGecko.Library.Net.Objects;
 using TreeGecko.Library.Common.Enums;
+using Nancy.Extensions;
+using Newtonsoft.Json;
 
 namespace HydrantWiki.Mobile.Api.Helpers
 {
@@ -37,12 +39,19 @@ namespace HydrantWiki.Mobile.Api.Helpers
             return false;
         }
 
-        public static BaseResponse Authorize(string _username, string _password, out User _user)
+        public static BaseResponse Authorize(Objects.AuthObject _auth, out User _user)
         {
             AuthorizationResponse authResponse = new AuthorizationResponse {Success = false};
 
+            if (_auth == null)
+            {
+                _user = null;
+                authResponse.Message = "Bad Request";
+                return authResponse;
+            }
+
             HydrantWikiManager hwManager = new HydrantWikiManager();
-            _user = hwManager.GetUser(UserSources.HydrantWiki, _username);
+            _user = hwManager.GetUserByEmail(UserSources.HydrantWiki, _auth.Email);
 
             if (_user != null)
             {
@@ -50,7 +59,14 @@ namespace HydrantWiki.Mobile.Api.Helpers
                 {
                     if (_user.Active)
                     {
-                        if (hwManager.ValidateUser(_user, _password))
+                        DateTime now = DateTime.UtcNow;
+                        DateTime tenMinAgo = now.AddMinutes(-10);
+                        int count10Min = hwManager.GetAuthenticationFailureCount(_user.Guid, tenMinAgo);
+                        DateTime oneDayAgo = now.AddHours(-24);
+                        int count1Day = hwManager.GetAuthenticationFailureCount(_user.Guid, oneDayAgo);
+
+
+                        if (hwManager.ValidateUser(_user, _auth.Password))
                         {
                             TGUserAuthorization authorization =
                                 TGUserAuthorization.GetNew(_user.Guid, "unknown");
@@ -66,13 +82,18 @@ namespace HydrantWiki.Mobile.Api.Helpers
                             authResponse.User = user;
                             authResponse.Message = "";
 
+                            hwManager.LogUserToInstall(_auth.InstallId, user.Username);
+
                             hwManager.LogInfo(_user.Guid, "User Logged In");
 
                             return authResponse;
                         }
 
+                        //Record failure to test if this is an attack. 
+                        hwManager.RecordAuthenticationFailure(_user.Guid);
+
                         //Bad password or username
-                        hwManager.LogWarning(Guid.Empty, "User not found");
+                        hwManager.LogWarning(_user.Guid, "Bad user or password");
                         authResponse.Message = "Bad user or password";
 
                         return authResponse;
@@ -100,10 +121,15 @@ namespace HydrantWiki.Mobile.Api.Helpers
 
         public static BaseResponse Authorize(Request _request, out User _user)
         {
-            string username = _request.Headers["Username"].First();
-            string password = _request.Headers["Password"].First();
+            string body = _request.Body.AsString();
+            Objects.AuthObject auth = null;
 
-            return Authorize(username, password, out _user);
+            if (body != null)
+            {
+                auth = JsonConvert.DeserializeObject<Objects.AuthObject>(body);
+            }
+
+            return Authorize(auth, out _user);
         }
     }
 }
