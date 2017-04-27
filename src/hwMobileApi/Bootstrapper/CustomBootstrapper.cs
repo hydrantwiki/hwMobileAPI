@@ -16,6 +16,7 @@ namespace HydrantWiki.Mobile.Api.Bootstrapper
     public class CustomBoostrapper : DefaultNancyBootstrapper
     {
         private string m_ApiToken;
+        private IRootPathProvider m_RootPathProvider;
 
         protected override void ConfigureRequestContainer(TinyIoCContainer _container, NancyContext _context)
         {
@@ -54,8 +55,26 @@ namespace HydrantWiki.Mobile.Api.Bootstrapper
             });
         }
 
+        protected override IRootPathProvider RootPathProvider
+        {
+            get
+            {
+                if (m_RootPathProvider == null)
+                {
+                    string mode = Config.GetSettingValue("HostingMode", "IIS");
+                    if (mode.Equals("IIS", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        m_RootPathProvider = new Nancy.Hosting.Aspnet.AspNetRootPathProvider();
+                    } else
+                    {
+                        m_RootPathProvider = new Nancy.Hosting.Self.FileSystemRootPathProvider();
+                    }
+                }
 
-        
+                return m_RootPathProvider;
+            }
+        }
+
         protected override void ConfigureConventions(NancyConventions _conventions)
         {
             base.ConfigureConventions(_conventions);

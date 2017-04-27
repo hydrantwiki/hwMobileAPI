@@ -34,8 +34,13 @@
     <Reference Include="MongoDB.Driver">
       <HintPath>..\..\bin\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="Nancy">
-      <HintPath>..\..\bin\Nancy.dll</HintPath>
+    <Reference Include="Nancy, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.1.4.3\lib\net40\Nancy.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.Hosting.Aspnet, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.Hosting.Aspnet.1.4.1\lib\net40\Nancy.Hosting.Aspnet.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Nancy.Hosting.Self">
       <HintPath>..\..\bin\Nancy.Hosting.Self.dll</HintPath>
@@ -82,6 +87,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="packages.config" />
     <None Include="Web.config">
       <SubType>Designer</SubType>
     </None>

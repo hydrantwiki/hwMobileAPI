@@ -9,3 +9,5 @@ src/hwAPIConsole/obj/
 src/hwAPIConsole/bin/
 src/hwDataLibrary/obj/
 src/hwMobileApi/packages/
+src/hwDataLibrary/bin/
+src/hwMobileApi/bin/
