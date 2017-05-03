@@ -27,6 +27,11 @@ namespace HydrantWiki.Library.DAOs
             BuildGeospatialIndex("Position", "POSITION");
         }
 
+        public List<Hydrant> GetHydrants()
+        {
+            return GetActive();
+        }
+
         public List<Hydrant> GetHydrants(GeoBox _geoBox)
         {
             IMongoQuery query = Query.WithinRectangle("Position",

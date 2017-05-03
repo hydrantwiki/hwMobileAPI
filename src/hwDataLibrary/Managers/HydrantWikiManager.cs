@@ -377,6 +377,16 @@ namespace HydrantWiki.Library.Managers
             Persist(_hydrant);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public List<Hydrant> GetHydrants()
+        {
+            HydrantDAO dao = new HydrantDAO(MongoDB);
+            return dao.GetHydrants();
+        }
+
         #endregion
 
         #region HydrantImage
