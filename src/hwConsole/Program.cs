@@ -1,4 +1,5 @@
-﻿using HydrantWiki.Library.Managers;
+﻿using HydrantWiki.Library.Helpers;
+using HydrantWiki.Library.Managers;
 using HydrantWiki.Library.Objects;
 using Newtonsoft.Json;
 using System;
@@ -48,24 +49,105 @@ namespace hwConsole
 
         static void CalcLeaders()
         {
+            DateTime now = DateTime.UtcNow;
+
             HydrantWikiManager manager = new HydrantWikiManager();
             List<Hydrant> hydrants = manager.GetHydrants();
 
-            Dictionary<Guid, int> userCounts = new Dictionary<Guid, int>();
+            Dictionary<Guid, User> users = manager.GetHydrantWikiUsers();
 
-            foreach (var hydrant in hydrants)
+            Dictionary<Guid, int> hydrantCountByUser = manager.GetNewHydrantsByUser();
+            Dictionary<Guid, TagStats> statsByUser = manager.GetTagStatsByUser();
+
+            List<UserStats> final = new List<UserStats>();
+
+            //Update the user stats
+            foreach (var userGuid in users.Keys)
             {
-                Guid userGuid = hydrant.OriginalTagUserGuid;
-                int count = 0;
+                UserStats userStats = manager.GetUserStats(userGuid);
 
-                if (userCounts.ContainsKey(userGuid))
+                if (userStats == null)
                 {
-                    count = userCounts[userGuid];
+                    userStats = new UserStats();
+                    userStats.Active = true;
+                    userStats.Guid = Guid.NewGuid();
+                    userStats.LastModifiedBy = null;
+                    userStats.LastModifiedDateTime = now;
+                    userStats.ParentGuid = null;
+                    userStats.UserGuid = userGuid;                    
                 }
 
-                count++;
+                if (hydrantCountByUser.ContainsKey(userGuid))
+                {
+                    userStats.NewHydrantsTagged = hydrantCountByUser[userGuid];                    
+                } else
+                {
+                    userStats.NewHydrantsTagged = 0;
+                }
 
-                userCounts[userGuid] = count;
+                if (statsByUser.ContainsKey(userGuid))
+                {
+                    var tagStat = statsByUser[userGuid];
+                    userStats.ApprovedTagCount = tagStat.ApprovedTagCount;
+                    userStats.PendingTagCount = tagStat.PendingTagCount;
+                    userStats.RejectedTagCount = tagStat.RejectedTagCount;
+                } else
+                {
+                    userStats.ApprovedTagCount = 0;
+                    userStats.PendingTagCount = 0;
+                    userStats.RejectedTagCount = 0;
+                }
+
+                manager.Persist(userStats);
+
+                final.Add(userStats);
+            }
+
+            //Sort and build daily standing
+            List<UserStats> sorted = final.OrderByDescending(u => u.NewHydrantsTagged).ToList();
+            List<Place> places = new List<Place>();
+
+            Place currentPlace = new Place();
+            currentPlace.Score = 0;
+
+            //get the user stats into buckets
+            foreach (var userStat in sorted)
+            {
+                if (userStat.NewHydrantsTagged > 0)
+                {
+                    if (userStat.NewHydrantsTagged == currentPlace.Score)
+                    {
+                        currentPlace.UsersAtThisPosition.Add(userStat);
+                    }
+                    else
+                    {
+                        currentPlace = new Place();
+                        currentPlace.Score = userStat.NewHydrantsTagged;
+                        currentPlace.UsersAtThisPosition.Add(userStat);
+                        places.Add(currentPlace);
+                    }
+                }
+            }
+
+            DailyStanding standing = manager.GetDailyStanding(now);
+            if (standing == null)
+            {
+                standing = new DailyStanding();
+                standing.Active = true;
+                standing.Date = now.Date;
+                standing.Guid = Guid.NewGuid();
+                standing.LastModifiedDateTime = now;
+            }
+
+            int position = 1;
+            foreach (var place in places)
+            {
+                foreach (var userStat in place.UsersAtThisPosition)
+                {
+                                        
+                }
+
+                position += place.UsersAtThisPosition.Count;
             }
 
 

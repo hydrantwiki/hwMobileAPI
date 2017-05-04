@@ -314,25 +314,6 @@ namespace HydrantWiki.Library.Managers
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        public long GetHydrantCount()
-        {
-            return 0;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="_userName"></param>
-        /// <returns></returns>
-        public int GetHydrantCount(string _userName)
-        {
-            return 0;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="_hydrant"></param>
         public void DeleteHydrant(Hydrant _hydrant)
         {
@@ -733,6 +714,46 @@ namespace HydrantWiki.Library.Managers
 
         #endregion
 
+        #region DailyStandings
+
+        public DailyStanding GetDailyStanding(DateTime _date)
+        {
+            DailyStandingDAO dao = new DailyStandingDAO(MongoDB);
+            return dao.GetDailyStanding(_date);
+        }
+
+        public void Persist(DailyStanding _dailyStanding)
+        {
+            DailyStandingDAO dao = new DailyStandingDAO(MongoDB);
+            dao.Persist(_dailyStanding);
+        }
+
+        public List<DailyStandingUser> GetDailyStandingUsers(Guid _dailyStandingGuid)
+        {
+            DailyStandingUserDAO dao = new DailyStandingUserDAO(MongoDB);
+            return dao.GetUserStandings(_dailyStandingGuid);
+        }
+
+        public void DeleteuserStandings(Guid _dailyStandingGuid)
+        {
+            DailyStandingUserDAO dao = new DailyStandingUserDAO(MongoDB);
+            dao.DeleteUserStandings(_dailyStandingGuid);
+        }
+
+        public void Persist(DailyStandingUser _dailyStandingUser)
+        {
+            DailyStandingUserDAO dao = new DailyStandingUserDAO(MongoDB);
+            dao.Persist(_dailyStandingUser);
+        }
+
+        public void Persist(List<DailyStandingUser> _dailyStandingUsers)
+        {
+            DailyStandingUserDAO dao = new DailyStandingUserDAO(MongoDB);
+            _dailyStandingUsers.ForEach(dsu => dao.Persist(dsu));
+        }
+
+
+        #endregion
 
         public bool ValidateAuthorizationToken(Guid _userGuid, string _authorizationToken)
         {
