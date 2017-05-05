@@ -461,6 +461,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                                 {
                                     stats = new UserStats();
                                     stats.UserGuid = userGuid;
+                                    stats.DisplayName = user.DisplayName;
                                     stats.Active = true;
                                 }
                                 stats.ApprovedTagCount++;
@@ -541,6 +542,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                                 {
                                     stats = new UserStats();
                                     stats.UserGuid = userGuid;
+                                    stats.DisplayName = user.DisplayName;
                                     stats.Active = true;
                                 }
                                 stats.ApprovedTagCount++;
@@ -603,6 +605,7 @@ namespace HydrantWiki.Mobile.Api.Modules
                             {
                                 stats = new UserStats();
                                 stats.UserGuid = userGuid;
+                                stats.DisplayName = user.DisplayName;
                                 stats.Active = true;
                             }
                             stats.RejectedTagCount++;

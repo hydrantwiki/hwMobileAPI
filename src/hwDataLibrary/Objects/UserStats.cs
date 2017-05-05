@@ -17,6 +17,8 @@ namespace HydrantWiki.Library.Objects
 
         public int NewHydrantsTagged { get; set; }
 
+        public string DisplayName { get; set; }
+
         public override TGSerializedObject GetTGSerializedObject()
         {
             TGSerializedObject tgs = base.GetTGSerializedObject();
@@ -27,6 +29,7 @@ namespace HydrantWiki.Library.Objects
             tgs.Add("PendingTagCount", PendingTagCount);
             tgs.Add("UserRanking", UserRanking);
             tgs.Add("NewHydrantsTagged", NewHydrantsTagged);
+            tgs.Add("DisplayName", DisplayName);
 
             return tgs;                
         }
@@ -41,6 +44,7 @@ namespace HydrantWiki.Library.Objects
             PendingTagCount = _tgs.GetInt32("PendingTagCount");
             UserRanking = _tgs.GetInt32("UserRanking");
             NewHydrantsTagged = _tgs.GetInt32("NewHydrantsTagged");
+            DisplayName = _tgs.GetString("DisplayName");
         }
 
         public override string ToString()

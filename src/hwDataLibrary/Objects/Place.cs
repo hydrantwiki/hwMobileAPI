@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using HydrantWiki.Library.Enums;
+using System.Collections.Generic;
 
 namespace HydrantWiki.Library.Objects
 {
@@ -10,6 +11,8 @@ namespace HydrantWiki.Library.Objects
         }
 
         public int Score { get; set; }
+
+        public UserStatSortColumn SortedBy { get; set; }
 
         public List<UserStats> UsersAtThisPosition { get; set; }
     }

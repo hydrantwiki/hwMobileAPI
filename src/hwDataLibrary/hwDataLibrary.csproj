@@ -125,11 +125,13 @@
     <Compile Include="DAOs\UserDAO.cs" />
     <Compile Include="DAOs\UserStatsDAO.cs" />
     <Compile Include="Enums\TagPositionAction.cs" />
+    <Compile Include="Enums\UserStatSortColumn.cs" />
     <Compile Include="Helpers\HydrantCSVHelper.cs" />
     <Compile Include="Helpers\ImageProcessingHelper.cs" />
     <Compile Include="Helpers\ManagerHelper.cs" />
     <Compile Include="Helpers\StreamHelper.cs" />
     <Compile Include="Helpers\TagHelper.cs" />
+    <Compile Include="Helpers\UserStatHelper.cs" />
     <Compile Include="Managers\HydrantWikiManager.cs" />
     <Compile Include="Managers\HydrantWikiStructureManager.cs" />
     <Compile Include="Objects\Address.cs" />

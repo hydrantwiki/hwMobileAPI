@@ -7,6 +7,8 @@ namespace HydrantWiki.Library.Objects
     {
         public Guid UserGuid { get; set; }
 
+        public string DisplayName { get; set; }
+
         public int NewHydrantCount { get; set; }
         
         public int NewHydrantPosition { get; set; }
@@ -20,6 +22,7 @@ namespace HydrantWiki.Library.Objects
             TGSerializedObject tgs = base.GetTGSerializedObject();
 
             tgs.Add("UserGuid", UserGuid);
+            tgs.Add("DisplayName", DisplayName);
             tgs.Add("NewHydrantCount", NewHydrantCount);
             tgs.Add("NewHydrantPosition", NewHydrantPosition);
             tgs.Add("ApprovedTagCount", ApprovedTagCount);
@@ -33,6 +36,7 @@ namespace HydrantWiki.Library.Objects
             base.LoadFromTGSerializedObject(_tg);
 
             UserGuid = _tg.GetGuid("UserGuid");
+            DisplayName = _tg.GetString("DisplayName");
             NewHydrantCount = _tg.GetInt32("NewHydrantCount");
             NewHydrantPosition = _tg.GetInt32("NewHydrantPosition");
             ApprovedTagCount = _tg.GetInt32("ApprovedTagCount");

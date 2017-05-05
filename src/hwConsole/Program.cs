@@ -1,4 +1,5 @@
-﻿using HydrantWiki.Library.Helpers;
+﻿using HydrantWiki.Library.Enums;
+using HydrantWiki.Library.Helpers;
 using HydrantWiki.Library.Managers;
 using HydrantWiki.Library.Objects;
 using Newtonsoft.Json;
@@ -21,20 +22,16 @@ namespace hwConsole
 
                 if (action.Equals("dump"))
                 {
-                    if (args.Length> 1)
+                    if (args.Length > 1)
                     {
                         DumpHydrants(args[0]);
                     }
-                } else if (action.Equals("calcleaders"))
-                {
-
                 }
-                
-
-
-
+                else if (action.Equals("calcleaders"))
+                {
+                    CalcLeaders();
+                }
             }
-            
         }
 
         static void DumpHydrants(string filename)
@@ -44,91 +41,29 @@ namespace hwConsole
 
             string body = JsonConvert.SerializeObject(hydrants);
 
+            //TODO Send to S3
             File.WriteAllText(filename, body);
+
         }
 
-        static void CalcLeaders()
+        static void CalcLeaders(DateTime? _now = null)
         {
-            DateTime now = DateTime.UtcNow;
-
+            DateTime now;
+            if (_now == null)
+            {
+                now = DateTime.UtcNow;
+            }
+            else
+            {
+                now = _now.Value;
+            }
+            
             HydrantWikiManager manager = new HydrantWikiManager();
             List<Hydrant> hydrants = manager.GetHydrants();
 
             Dictionary<Guid, User> users = manager.GetHydrantWikiUsers();
-
-            Dictionary<Guid, int> hydrantCountByUser = manager.GetNewHydrantsByUser();
-            Dictionary<Guid, TagStats> statsByUser = manager.GetTagStatsByUser();
-
-            List<UserStats> final = new List<UserStats>();
-
-            //Update the user stats
-            foreach (var userGuid in users.Keys)
-            {
-                UserStats userStats = manager.GetUserStats(userGuid);
-
-                if (userStats == null)
-                {
-                    userStats = new UserStats();
-                    userStats.Active = true;
-                    userStats.Guid = Guid.NewGuid();
-                    userStats.LastModifiedBy = null;
-                    userStats.LastModifiedDateTime = now;
-                    userStats.ParentGuid = null;
-                    userStats.UserGuid = userGuid;                    
-                }
-
-                if (hydrantCountByUser.ContainsKey(userGuid))
-                {
-                    userStats.NewHydrantsTagged = hydrantCountByUser[userGuid];                    
-                } else
-                {
-                    userStats.NewHydrantsTagged = 0;
-                }
-
-                if (statsByUser.ContainsKey(userGuid))
-                {
-                    var tagStat = statsByUser[userGuid];
-                    userStats.ApprovedTagCount = tagStat.ApprovedTagCount;
-                    userStats.PendingTagCount = tagStat.PendingTagCount;
-                    userStats.RejectedTagCount = tagStat.RejectedTagCount;
-                } else
-                {
-                    userStats.ApprovedTagCount = 0;
-                    userStats.PendingTagCount = 0;
-                    userStats.RejectedTagCount = 0;
-                }
-
-                manager.Persist(userStats);
-
-                final.Add(userStats);
-            }
-
-            //Sort and build daily standing
-            List<UserStats> sorted = final.OrderByDescending(u => u.NewHydrantsTagged).ToList();
-            List<Place> places = new List<Place>();
-
-            Place currentPlace = new Place();
-            currentPlace.Score = 0;
-
-            //get the user stats into buckets
-            foreach (var userStat in sorted)
-            {
-                if (userStat.NewHydrantsTagged > 0)
-                {
-                    if (userStat.NewHydrantsTagged == currentPlace.Score)
-                    {
-                        currentPlace.UsersAtThisPosition.Add(userStat);
-                    }
-                    else
-                    {
-                        currentPlace = new Place();
-                        currentPlace.Score = userStat.NewHydrantsTagged;
-                        currentPlace.UsersAtThisPosition.Add(userStat);
-                        places.Add(currentPlace);
-                    }
-                }
-            }
-
+            List<UserStats> final = users.Values.ToList().RebuildStats(now);
+            
             DailyStanding standing = manager.GetDailyStanding(now);
             if (standing == null)
             {
@@ -138,20 +73,19 @@ namespace hwConsole
                 standing.Guid = Guid.NewGuid();
                 standing.LastModifiedDateTime = now;
             }
+            standing.ActiveUsers = final.Count;
 
-            int position = 1;
-            foreach (var place in places)
-            {
-                foreach (var userStat in place.UsersAtThisPosition)
-                {
-                                        
-                }
+            //Sort and build daily standings based on new hydrants
+            List<Place> places = final.DeterminePlaces(UserStatSortColumn.NewHydrant);
+            Dictionary<Guid, DailyStandingUser> dsus = places.DetermineStanding(standing.Guid);
 
-                position += place.UsersAtThisPosition.Count;
-            }
+            places = final.DeterminePlaces(UserStatSortColumn.ApprovedTags);
+            dsus = places.DetermineStanding(standing.Guid, dsus);
 
-
-
+            manager.Persist(final);
+            manager.Persist(standing);
+            manager.DeleteUserStandings(standing.Guid);
+            manager.Persist(dsus.Values.ToList());
         }
     }
 }

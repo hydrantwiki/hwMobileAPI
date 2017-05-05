@@ -691,6 +691,20 @@ namespace HydrantWiki.Library.Managers
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="_userStats"></param>
+        public void Persist(List<UserStats> _userStats)
+        {
+            UserStatsDAO dao = new UserStatsDAO(MongoDB);
+
+            foreach (var userStat in _userStats)
+            {
+                dao.Persist(userStat);
+            }            
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="_userSource"></param>
         /// <param name="_username"></param>
         /// <returns></returns>
@@ -734,7 +748,7 @@ namespace HydrantWiki.Library.Managers
             return dao.GetUserStandings(_dailyStandingGuid);
         }
 
-        public void DeleteuserStandings(Guid _dailyStandingGuid)
+        public void DeleteUserStandings(Guid _dailyStandingGuid)
         {
             DailyStandingUserDAO dao = new DailyStandingUserDAO(MongoDB);
             dao.DeleteUserStandings(_dailyStandingGuid);
@@ -746,6 +760,10 @@ namespace HydrantWiki.Library.Managers
             dao.Persist(_dailyStandingUser);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_dailyStandingUsers"></param>
         public void Persist(List<DailyStandingUser> _dailyStandingUsers)
         {
             DailyStandingUserDAO dao = new DailyStandingUserDAO(MongoDB);
